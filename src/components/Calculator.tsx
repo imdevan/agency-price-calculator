@@ -15,7 +15,6 @@ import { useToast } from "@/hooks/use-toast";
 const Calculator: React.FC = () => {
   const { toast } = useToast();
   const [roles, setRoles] = useState<Role[]>([
-    { id: 'juniorDev', title: 'Junior Developer', hourlyRate: 75, weeklyHours: 0 },
     { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262, weeklyHours: 17 },
     { id: 'designer', title: 'Designer', hourlyRate: 125, weeklyHours: 0 },
     { id: 'projectManager', title: 'Project Manager', hourlyRate: 135, weeklyHours: 0 },

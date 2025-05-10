@@ -1,8 +1,7 @@
 import { ProjectScope, InfrastructureCost, InfrastructureSourceCosts } from './types';
 
 export const DEFAULT_ROLES = [
-  { id: 'juniorDev', title: 'Junior Developer', hourlyRate: 75 },
-  { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 150 },
+  { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262 },
   { id: 'designer', title: 'Designer', hourlyRate: 125 },
   { id: 'projectManager', title: 'Project Manager', hourlyRate: 135 },
   { id: 'qaEngineer', title: 'QA Engineer', hourlyRate: 85 }
@@ -15,7 +14,6 @@ export const PROJECT_SCOPES: Record<string, ProjectScope> = {
     description: 'A minimal implementation to validate the core idea.',
     developmentTimeMultiplier: 1,
     roles: {
-      juniorDev: 40,
       seniorDev: 20,
       designer: 10,
       projectManager: 10,
@@ -28,7 +26,6 @@ export const PROJECT_SCOPES: Record<string, ProjectScope> = {
     description: 'Core features with basic user experience.',
     developmentTimeMultiplier: 2.5,
     roles: {
-      juniorDev: 100,
       seniorDev: 50,
       designer: 30,
       projectManager: 25,
@@ -41,8 +38,7 @@ export const PROJECT_SCOPES: Record<string, ProjectScope> = {
     description: 'Complete solution with full feature set and polished UX.',
     developmentTimeMultiplier: 5,
     roles: {
-      juniorDev: 300,
-      seniorDev: 150,
+        seniorDev: 150,
       designer: 80,
       projectManager: 70,
       qaEngineer: 60,
