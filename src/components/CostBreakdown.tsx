@@ -41,7 +41,13 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
     Math.ceil(PROJECT_SCOPES[selectedScope].developmentTimeMultiplier * 4) : 
     "N/A (set weekly hours)";
   
-  const formatCurrency = (amount: number) => {
+  // Calculate total development cost based on timeline
+  const totalDevelopmentCost = typeof developmentWeeks === 'number' ? 
+    totalWeeklyCost * developmentWeeks : 
+    "N/A";
+  
+  const formatCurrency = (amount: number | string) => {
+    if (typeof amount === 'string') return amount;
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -59,6 +65,10 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
         <CardContent>
           <div className="grid gap-2">
             <div className="flex justify-between text-base">
+              <span>Project Scope:</span>
+              <span className="font-semibold">{PROJECT_SCOPES[selectedScope].label}</span>
+            </div>
+            <div className="flex justify-between text-base">
               <span>Weekly Development Cost:</span>
               <span className="font-semibold">{formatCurrency(totalWeeklyCost)}</span>
             </div>
@@ -73,6 +83,10 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
             <div className="flex justify-between text-base">
               <span>Estimated Timeline:</span>
               <span className="font-semibold">{typeof developmentWeeks === 'number' ? `${developmentWeeks} weeks` : developmentWeeks}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span>Total Development Cost:</span>
+              <span className="font-semibold">{formatCurrency(totalDevelopmentCost)}</span>
             </div>
           </div>
         </CardContent>
