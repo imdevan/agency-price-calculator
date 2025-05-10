@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Download } from "lucide-react";
@@ -67,7 +65,7 @@ const Calculator: React.FC = () => {
   };
 
   return (
-    <div className="container py-8 max-w-5xl mx-auto">
+    <div className="container py-8 max-w-7xl mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Studio Price Calculator</h1>
         <p className="text-muted-foreground mt-2">
@@ -75,77 +73,78 @@ const Calculator: React.FC = () => {
         </p>
       </div>
       
-      <Tabs defaultValue="calculator">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="calculator">Calculator</TabsTrigger>
-          <TabsTrigger value="results">Results</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="calculator">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Composition</CardTitle>
-                <CardDescription>Set hourly rates and weekly hours for each role</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {roles.map((role) => (
-                  <RoleInput 
-                    key={role.id} 
-                    role={role} 
-                    onChange={handleRoleChange} 
-                  />
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Scope</CardTitle>
-                <CardDescription>Select the type of project you're planning</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScopeSelector 
-                  selectedScope={selectedScope} 
-                  onChange={handleScopeChange}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Calculator Section */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Composition</CardTitle>
+              <CardDescription>Set hourly rates and weekly hours for each role</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {roles.map((role) => (
+                <RoleInput 
+                  key={role.id} 
+                  role={role} 
+                  onChange={handleRoleChange} 
                 />
-              </CardContent>
-            </Card>
+              ))}
+            </CardContent>
+          </Card>
 
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>User Load</CardTitle>
-                <CardDescription>Estimate your expected user count</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <UserSlider 
-                  userCount={userCount} 
-                  onChange={handleUserCountChange} 
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="results">
-          <div className="mb-6 flex justify-between items-center">
-            <h2 className="text-2xl font-semibold">Project Cost Breakdown</h2>
-            <Button onClick={handleDownloadReport} className="flex items-center gap-2">
-              <Download size={16} />
-              <span>Download CSV</span>
-            </Button>
-          </div>
-          
-          <Separator className="my-6" />
-          
-          <CostBreakdown 
-            roles={roles}
-            selectedScope={selectedScope}
-            infrastructureCosts={infrastructureCosts}
-            userCount={userCount}
-          />
-        </TabsContent>
-      </Tabs>
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Scope</CardTitle>
+              <CardDescription>Select the type of project you're planning</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScopeSelector 
+                selectedScope={selectedScope} 
+                onChange={handleScopeChange}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>User Load</CardTitle>
+              <CardDescription>Estimate your expected user count</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <UserSlider 
+                userCount={userCount} 
+                onChange={handleUserCountChange} 
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Results Section */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Project Cost Breakdown</CardTitle>
+                  <CardDescription>View detailed cost analysis</CardDescription>
+                </div>
+                <Button onClick={handleDownloadReport} className="flex items-center gap-2">
+                  <Download size={16} />
+                  <span>Download CSV</span>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CostBreakdown 
+                roles={roles}
+                selectedScope={selectedScope}
+                infrastructureCosts={infrastructureCosts}
+                userCount={userCount}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
