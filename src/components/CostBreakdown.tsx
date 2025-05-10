@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Role, Scope, InfrastructureCost } from '@/types';
 import { PROJECT_SCOPES, TIMELINE_CALCULATOR } from '@/data';
+import InfrastructureSourceDetails from './InfrastructureSourceDetails';
 
 interface CostBreakdownProps {
   roles: Role[];
@@ -119,19 +120,31 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
             </thead>
             <tbody>
               <tr className="border-b border-gray-100">
-                <td className="py-2">Hosting</td>
+                <td className="py-2">
+                  <div>Hosting</div>
+                  <InfrastructureSourceDetails selectedScope={selectedScope} serviceType="hosting" serviceName="Hosting" />
+                </td>
                 <td className="text-right py-2">{formatCurrency(infrastructureCosts.hosting)}</td>
               </tr>
               <tr className="border-b border-gray-100">
-                <td className="py-2">Database</td>
+                <td className="py-2">
+                  <div>Database</div>
+                  <InfrastructureSourceDetails selectedScope={selectedScope} serviceType="database" serviceName="Database" />
+                </td>
                 <td className="text-right py-2">{formatCurrency(infrastructureCosts.database)}</td>
               </tr>
               <tr className="border-b border-gray-100">
-                <td className="py-2">CDN</td>
+                <td className="py-2">
+                  <div>CDN</div>
+                  <InfrastructureSourceDetails selectedScope={selectedScope} serviceType="cdn" serviceName="CDN" />
+                </td>
                 <td className="text-right py-2">{formatCurrency(infrastructureCosts.cdn)}</td>
               </tr>
               <tr className="border-b border-gray-100">
-                <td className="py-2">CI/CD</td>
+                <td className="py-2">
+                  <div>CI/CD</div>
+                  <InfrastructureSourceDetails selectedScope={selectedScope} serviceType="cicd" serviceName="CI/CD" />
+                </td>
                 <td className="text-right py-2">{formatCurrency(infrastructureCosts.cicd)}</td>
               </tr>
               <tr className="font-medium">

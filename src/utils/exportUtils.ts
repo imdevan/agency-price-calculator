@@ -1,6 +1,6 @@
 
 import { Role, Scope, InfrastructureCost } from '@/types';
-import { PROJECT_SCOPES, TIMELINE_CALCULATOR } from '@/data';
+import { PROJECT_SCOPES, TIMELINE_CALCULATOR, INFRASTRUCTURE_SOURCE_COSTS } from '@/data';
 
 export const generateCsvData = (
   roles: Role[],
@@ -55,8 +55,39 @@ export const generateCsvData = (
   csvContent += `TOTAL MONTHLY,$${monthlyInfrastructureCost}\n`;
   csvContent += `TOTAL YEARLY,$${yearlyInfrastructureCost}\n\n`;
 
+  // Infrastructure Source Services
+  csvContent += "INFRASTRUCTURE SOURCE SERVICES\n";
+  
+  // Hosting services
+  csvContent += "\nHOSTING SERVICES\n";
+  csvContent += "Service,Cost,Description\n";
+  INFRASTRUCTURE_SOURCE_COSTS[selectedScope].hosting.forEach(source => {
+    csvContent += `${source.serviceName},$${source.baseCost},${source.description}\n`;
+  });
+  
+  // Database services
+  csvContent += "\nDATABASE SERVICES\n";
+  csvContent += "Service,Cost,Description\n";
+  INFRASTRUCTURE_SOURCE_COSTS[selectedScope].database.forEach(source => {
+    csvContent += `${source.serviceName},$${source.baseCost},${source.description}\n`;
+  });
+  
+  // CDN services
+  csvContent += "\nCDN SERVICES\n";
+  csvContent += "Service,Cost,Description\n";
+  INFRASTRUCTURE_SOURCE_COSTS[selectedScope].cdn.forEach(source => {
+    csvContent += `${source.serviceName},$${source.baseCost},${source.description}\n`;
+  });
+  
+  // CI/CD services
+  csvContent += "\nCI/CD SERVICES\n";
+  csvContent += "Service,Cost,Description\n";
+  INFRASTRUCTURE_SOURCE_COSTS[selectedScope].cicd.forEach(source => {
+    csvContent += `${source.serviceName},$${source.baseCost},${source.description}\n`;
+  });
+
   // Assumptions
-  csvContent += "CALCULATION ASSUMPTIONS\n";
+  csvContent += "\nCALCULATION ASSUMPTIONS\n";
   csvContent += `Team Size,${TIMELINE_CALCULATOR.teamSize} developers\n`;
   csvContent += `Productive Hours,${TIMELINE_CALCULATOR.hoursPerWeekPerDev} hours/dev/week\n`;
 
