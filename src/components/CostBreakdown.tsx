@@ -18,23 +18,28 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   infrastructureCosts,
   userCount,
 }) => {
-  const scope = PROJECT_SCOPES[selectedScope];
-  const roleCosts = roles.map(role => {
-    const hours = scope.roles[role.id] || 0;
-    const cost = hours * role.hourlyRate;
-    return { ...role, hours, cost };
+  // Calculate weekly costs based on hourly rate and weekly hours
+  const weeklyRoleCosts = roles.map(role => {
+    const weeklyCost = role.hourlyRate * role.weeklyHours;
+    return { ...role, weeklyCost };
   });
 
-  const totalDevelopmentCost = roleCosts.reduce((total, role) => total + role.cost, 0);
+  const totalWeeklyCost = weeklyRoleCosts.reduce((total, role) => total + role.weeklyCost, 0);
+  const monthlyDevelopmentCost = totalWeeklyCost * 4.33; // Average weeks per month
+  const yearlyDevelopmentCost = monthlyDevelopmentCost * 12;
+  
   const totalInfrastructureCost = Object.values(infrastructureCosts).reduce((sum, cost) => sum + cost, 0);
   const monthlyInfrastructureCost = totalInfrastructureCost;
   const yearlyInfrastructureCost = monthlyInfrastructureCost * 12;
-  const totalCost = totalDevelopmentCost + yearlyInfrastructureCost;
   
-  // Calculate timeline
-  const totalHours = roleCosts.reduce((sum, role) => sum + role.hours, 0);
-  const developmentWeeks = Math.ceil(totalHours / 
-    (TIMELINE_CALCULATOR.teamSize * TIMELINE_CALCULATOR.hoursPerWeekPerDev));
+  const monthlyTotalCost = monthlyDevelopmentCost + monthlyInfrastructureCost;
+  const yearlyTotalCost = yearlyDevelopmentCost + yearlyInfrastructureCost;
+  
+  // Calculate timeline - now based on weekly hours commitment
+  const totalWeeklyHours = weeklyRoleCosts.reduce((sum, role) => sum + role.weeklyHours, 0);
+  const developmentWeeks = totalWeeklyHours > 0 ? 
+    Math.ceil(PROJECT_SCOPES[selectedScope].developmentTimeMultiplier * 4) : 
+    "N/A (set weekly hours)";
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -54,20 +59,20 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
         <CardContent>
           <div className="grid gap-2">
             <div className="flex justify-between text-base">
-              <span>Total Project Cost:</span>
-              <span className="font-semibold">{formatCurrency(totalDevelopmentCost)}</span>
+              <span>Weekly Development Cost:</span>
+              <span className="font-semibold">{formatCurrency(totalWeeklyCost)}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span>Monthly Total Cost:</span>
+              <span className="font-semibold">{formatCurrency(monthlyTotalCost)}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span>Yearly Total Cost:</span>
+              <span className="font-semibold">{formatCurrency(yearlyTotalCost)}</span>
             </div>
             <div className="flex justify-between text-base">
               <span>Estimated Timeline:</span>
-              <span className="font-semibold">{developmentWeeks} weeks</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Monthly Infrastructure Cost:</span>
-              <span className="font-semibold">{formatCurrency(monthlyInfrastructureCost)}</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Yearly Infrastructure Cost:</span>
-              <span className="font-semibold">{formatCurrency(yearlyInfrastructureCost)}</span>
+              <span className="font-semibold">{typeof developmentWeeks === 'number' ? `${developmentWeeks} weeks` : developmentWeeks}</span>
             </div>
           </div>
         </CardContent>
@@ -82,23 +87,27 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
             <thead>
               <tr className="border-b">
                 <th className="text-left pb-2">Role</th>
-                <th className="text-right pb-2">Hours</th>
-                <th className="text-right pb-2">Rate</th>
-                <th className="text-right pb-2">Cost</th>
+                <th className="text-right pb-2">Weekly Hours</th>
+                <th className="text-right pb-2">Hourly Rate</th>
+                <th className="text-right pb-2">Weekly Cost</th>
               </tr>
             </thead>
             <tbody>
-              {roleCosts.map((role) => (
+              {weeklyRoleCosts.map((role) => (
                 <tr key={role.id} className="border-b border-gray-100">
                   <td className="py-2">{role.title}</td>
-                  <td className="text-right py-2">{role.hours}</td>
+                  <td className="text-right py-2">{role.weeklyHours}</td>
                   <td className="text-right py-2">{formatCurrency(role.hourlyRate)}</td>
-                  <td className="text-right py-2">{formatCurrency(role.cost)}</td>
+                  <td className="text-right py-2">{formatCurrency(role.weeklyCost)}</td>
                 </tr>
               ))}
               <tr className="font-medium">
-                <td colSpan={3} className="text-right pt-2">Total Development Cost:</td>
-                <td className="text-right pt-2">{formatCurrency(totalDevelopmentCost)}</td>
+                <td colSpan={3} className="text-right pt-2">Total Weekly Development Cost:</td>
+                <td className="text-right pt-2">{formatCurrency(totalWeeklyCost)}</td>
+              </tr>
+              <tr className="font-medium">
+                <td colSpan={3} className="text-right pt-2">Total Monthly Development Cost:</td>
+                <td className="text-right pt-2">{formatCurrency(monthlyDevelopmentCost)}</td>
               </tr>
             </tbody>
           </table>

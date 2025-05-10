@@ -3,6 +3,7 @@ export type Role = {
   id: string;
   title: string;
   hourlyRate: number;
+  weeklyHours: number;
 };
 
 export type Scope = 'poc' | 'mvp' | 'production';
