@@ -18,7 +18,6 @@ const Calculator: React.FC = () => {
     { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262, weeklyHours: 17 },
     { id: 'designer', title: 'Designer', hourlyRate: 125, weeklyHours: 0 },
     { id: 'projectManager', title: 'Project Manager', hourlyRate: 135, weeklyHours: 0 },
-    { id: 'qaEngineer', title: 'QA Engineer', hourlyRate: 85, weeklyHours: 0 }
   ]);
   const [selectedScope, setSelectedScope] = useState<Scope>('mvp');
   const [userCount, setUserCount] = useState<number>(500);

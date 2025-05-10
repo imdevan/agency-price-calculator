@@ -4,7 +4,6 @@ export const DEFAULT_ROLES = [
   { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262 },
   { id: 'designer', title: 'Designer', hourlyRate: 125 },
   { id: 'projectManager', title: 'Project Manager', hourlyRate: 135 },
-  { id: 'qaEngineer', title: 'QA Engineer', hourlyRate: 85 }
 ];
 
 export const PROJECT_SCOPES: Record<string, ProjectScope> = {
@@ -17,7 +16,6 @@ export const PROJECT_SCOPES: Record<string, ProjectScope> = {
       seniorDev: 20,
       designer: 10,
       projectManager: 10,
-      qaEngineer: 5,
     },
   },
   mvp: {
@@ -29,7 +27,6 @@ export const PROJECT_SCOPES: Record<string, ProjectScope> = {
       seniorDev: 50,
       designer: 30,
       projectManager: 25,
-      qaEngineer: 20,
     },
   },
   production: {
@@ -41,7 +38,6 @@ export const PROJECT_SCOPES: Record<string, ProjectScope> = {
         seniorDev: 150,
       designer: 80,
       projectManager: 70,
-      qaEngineer: 60,
     },
   },
 };
