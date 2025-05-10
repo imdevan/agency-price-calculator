@@ -85,7 +85,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
               <span className="font-semibold">{typeof developmentWeeks === 'number' ? `${developmentWeeks} weeks` : developmentWeeks}</span>
             </div>
             <div className="flex justify-between text-base">
-              <span>Total Development Cost:</span>
+              <span>Estimated Development Cost:</span>
               <span className="font-semibold">{formatCurrency(totalDevelopmentCost)}</span>
             </div>
           </div>
