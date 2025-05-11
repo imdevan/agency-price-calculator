@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Download } from "lucide-react";
+import { ToggleLeft, ToggleRight, Download, RefreshCw } from "lucide-react";
 import { Role, Scope, InfrastructureCost, TimelineAdjustment, FreeTierEligibility } from '@/types';
 import { 
   PROJECT_SCOPES, 
@@ -20,8 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 import TimelineSlider from './TimelineSlider';
 import FreeTierToggle from './FreeTierToggle';
 import StorageCostInput from './StorageCostInput';
-import AuthCostInput from './AuthCostInput';
 import OtherServicesInput from './OtherServicesInput';
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 interface OtherService {
   id: string;
@@ -32,6 +32,12 @@ interface OtherService {
 
 const Calculator: React.FC = () => {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // UI state
+  const [showOnlyResults, setShowOnlyResults] = useState<boolean>(false);
+
   const [roles, setRoles] = useState<Role[]>([
     { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262, weeklyHours: 17 },
     { id: 'designer', title: 'Designer', hourlyRate: 125, weeklyHours: 0 },
@@ -40,7 +46,6 @@ const Calculator: React.FC = () => {
   const [selectedScope, setSelectedScope] = useState<Scope>('mvp');
   const [userCount, setUserCount] = useState<number>(500);
   const [gbStorage, setGbStorage] = useState<number>(10);
-  const [authUsers, setAuthUsers] = useState<number>(5000);
   const [otherServices, setOtherServices] = useState<OtherService[]>([]);
   const [infrastructureCosts, setInfrastructureCosts] = useState<InfrastructureCost>(
     BASE_INFRASTRUCTURE_COSTS.mvp
@@ -61,6 +66,136 @@ const Calculator: React.FC = () => {
     adjustedWeeks: 0,
     multiplier: 1
   });
+
+  // Load state from URL on initial render
+  useEffect(() => {
+    if (searchParams.size === 0) return;
+
+    // Load scope
+    const scope = searchParams.get('scope');
+    if (scope && (scope === 'poc' || scope === 'mvp' || scope === 'production')) {
+      setSelectedScope(scope);
+    }
+
+    // Load user count
+    const users = searchParams.get('users');
+    if (users && !isNaN(Number(users))) {
+      setUserCount(Number(users));
+    }
+
+    // Load storage
+    const storage = searchParams.get('storage');
+    if (storage && !isNaN(Number(storage))) {
+      setGbStorage(Number(storage));
+    }
+
+    // Load free tier eligibility
+    const freeTierParam = searchParams.get('freeTier');
+    if (freeTierParam) {
+      try {
+        const freeTierValues = JSON.parse(freeTierParam);
+        setFreeTierEligibility(prev => ({
+          ...prev,
+          ...freeTierValues
+        }));
+      } catch (e) {
+        console.error("Failed to parse free tier values from URL");
+      }
+    }
+
+    // Load roles
+    const rolesParam = searchParams.get('roles');
+    if (rolesParam) {
+      try {
+        const rolesValues = JSON.parse(rolesParam);
+        if (Array.isArray(rolesValues)) {
+          setRoles(rolesValues);
+        }
+      } catch (e) {
+        console.error("Failed to parse roles from URL");
+      }
+    }
+
+    // Load timeline
+    const timelineParam = searchParams.get('timeline');
+    if (timelineParam) {
+      try {
+        const timelineValues = JSON.parse(timelineParam);
+        setTimeline(prev => ({
+          ...prev,
+          ...timelineValues
+        }));
+      } catch (e) {
+        console.error("Failed to parse timeline from URL");
+      }
+    }
+
+    // Load other services
+    const servicesParam = searchParams.get('services');
+    if (servicesParam) {
+      try {
+        const servicesValues = JSON.parse(servicesParam);
+        if (Array.isArray(servicesValues)) {
+          setOtherServices(servicesValues);
+        }
+      } catch (e) {
+        console.error("Failed to parse other services from URL");
+      }
+    }
+
+    // Load UI state
+    const resultsOnly = searchParams.get('resultsOnly');
+    if (resultsOnly === 'true') {
+      setShowOnlyResults(true);
+    }
+  }, []);
+
+  // Update URL when state changes
+  useEffect(() => {
+    // Only update after initial render
+    const params = new URLSearchParams();
+    
+    // Add scope
+    params.set('scope', selectedScope);
+    
+    // Add user count
+    params.set('users', userCount.toString());
+    
+    // Add storage
+    params.set('storage', gbStorage.toString());
+    
+    // Add free tier eligibility
+    params.set('freeTier', JSON.stringify(freeTierEligibility));
+    
+    // Add roles
+    params.set('roles', JSON.stringify(roles));
+    
+    // Add timeline
+    params.set('timeline', JSON.stringify({
+      baseWeeks: timeline.baseWeeks,
+      adjustedWeeks: timeline.adjustedWeeks,
+      multiplier: timeline.multiplier
+    }));
+    
+    // Add other services
+    params.set('services', JSON.stringify(otherServices));
+    
+    // Add UI state
+    if (showOnlyResults) {
+      params.set('resultsOnly', 'true');
+    }
+    
+    setSearchParams(params, { replace: true });
+  }, [
+    selectedScope, 
+    userCount, 
+    gbStorage, 
+    freeTierEligibility, 
+    roles, 
+    timeline, 
+    otherServices,
+    showOnlyResults
+  ]);
 
   // Calculate base timeline when scope or role hours change
   useEffect(() => {
@@ -88,19 +223,22 @@ const Calculator: React.FC = () => {
     let storageCost = baseCosts.storage;
     if (!freeTierEligibility.storage) {
       const billableGB = Math.max(0, gbStorage - STORAGE_COST_CALCULATOR.baseFreeGB);
-      storageCost = Math.max(baseCosts.storage, billableGB * STORAGE_COST_CALCULATOR.pricePerGBPerMonth);
+      storageCost = billableGB * STORAGE_COST_CALCULATOR.pricePerGBPerMonth;
+      if (storageCost < baseCosts.storage) {
+        storageCost = baseCosts.storage;
+      }
     } else {
       storageCost = 0;
     }
     
-    // Calculate auth cost based on MAU and free tier
+    // Calculate auth cost based on user count and free tier
     let authCost = baseCosts.authentication;
     if (!freeTierEligibility.authentication) {
-      const billableUsers = Math.max(0, authUsers - AUTHENTICATION_COST_CALCULATOR.freeMAUs);
-      authCost = Math.max(
-        baseCosts.authentication, 
-        billableUsers * AUTHENTICATION_COST_CALCULATOR.pricePerMAUBeyondFree
-      );
+      const billableUsers = Math.max(0, userCount - AUTHENTICATION_COST_CALCULATOR.freeMAUs);
+      authCost = billableUsers * AUTHENTICATION_COST_CALCULATOR.pricePerMAUBeyondFree;
+      if (authCost < baseCosts.authentication) {
+        authCost = baseCosts.authentication;
+      }
     } else {
       authCost = 0;
     }
@@ -125,7 +263,6 @@ const Calculator: React.FC = () => {
     selectedScope, 
     userCount, 
     gbStorage, 
-    authUsers, 
     otherServices, 
     freeTierEligibility
   ]);
@@ -168,13 +305,52 @@ const Calculator: React.FC = () => {
       timeline,
       freeTierEligibility,
       gbStorage,
-      authUsers,
+      userCount, // Use same user count for auth users
       otherServices
     );
     toast({
       title: "Report Downloaded",
       description: "Your CSV report has been generated and downloaded."
     });
+  };
+
+  const handleResetForm = () => {
+    setRoles([
+      { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262, weeklyHours: 17 },
+      { id: 'designer', title: 'Designer', hourlyRate: 125, weeklyHours: 0 },
+      { id: 'projectManager', title: 'Project Manager', hourlyRate: 135, weeklyHours: 0 },
+    ]);
+    setSelectedScope('mvp');
+    setUserCount(500);
+    setGbStorage(10);
+    setOtherServices([]);
+    setFreeTierEligibility({
+      hosting: false,
+      database: false,
+      cdn: false,
+      cicd: false,
+      storage: false,
+      authentication: false,
+      otherServices: false
+    });
+    setTimeline({
+      baseWeeks: 0,
+      adjustedWeeks: 0,
+      multiplier: 1
+    });
+    setShowOnlyResults(false);
+    
+    // Clear URL params
+    navigate('/', { replace: true });
+    
+    toast({
+      title: "Form Reset",
+      description: "All inputs have been reset to default values."
+    });
+  };
+
+  const toggleResultsView = () => {
+    setShowOnlyResults(prev => !prev);
   };
 
   return (
@@ -186,165 +362,197 @@ const Calculator: React.FC = () => {
         </p>
       </div>
       
+      {/* Top Controls Section */}
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={toggleResultsView}
+          >
+            {showOnlyResults ? (
+              <>
+                <ToggleLeft size={16} />
+                <span>Show All Inputs</span>
+              </>
+            ) : (
+              <>
+                <ToggleRight size={16} />
+                <span>Show Results Only</span>
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={handleResetForm}
+          >
+            <RefreshCw size={16} />
+            <span>Reset Form</span>
+          </Button>
+        </div>
+        
+        <Button onClick={handleDownloadReport} className="flex items-center gap-2">
+          <Download size={16} />
+          <span>Download CSV</span>
+        </Button>
+      </div>
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Calculator Section */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Composition</CardTitle>
-              <CardDescription>Set hourly rates and weekly hours for each role</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {roles.map((role) => (
-                <RoleInput 
-                  key={role.id} 
-                  role={role} 
-                  onChange={handleRoleChange} 
-                />
-              ))}
-            </CardContent>
-          </Card>
+        {!showOnlyResults && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Team Composition</CardTitle>
+                <CardDescription>Set hourly rates and weekly hours for each role</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {roles.map((role) => (
+                  <RoleInput 
+                    key={role.id} 
+                    role={role} 
+                    onChange={handleRoleChange} 
+                  />
+                ))}
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Scope</CardTitle>
-              <CardDescription>Select the type of project you're planning</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScopeSelector 
-                selectedScope={selectedScope} 
-                onChange={handleScopeChange}
-              />
-              
-              {timeline.baseWeeks > 0 && (
-                <div className="mt-6">
-                  <TimelineSlider 
-                    baseWeeks={timeline.baseWeeks}
-                    timeline={timeline}
-                    onChange={handleTimelineChange}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Scope</CardTitle>
+                <CardDescription>Select the type of project you're planning</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScopeSelector 
+                  selectedScope={selectedScope} 
+                  onChange={handleScopeChange}
+                />
+                
+                {timeline.baseWeeks > 0 && (
+                  <div className="mt-6">
+                    <TimelineSlider 
+                      baseWeeks={timeline.baseWeeks}
+                      timeline={timeline}
+                      onChange={handleTimelineChange}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>User Load</CardTitle>
-              <CardDescription>Estimate your expected user count</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <UserSlider 
-                userCount={userCount} 
-                onChange={handleUserCountChange} 
-              />
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Infrastructure Options</CardTitle>
-              <CardDescription>Configure additional services and free tier eligibility</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Storage Cost Input */}
-              <div>
-                <StorageCostInput 
-                  gbStored={gbStorage}
-                  onChange={setGbStorage}
-                  cost={infrastructureCosts.storage}
-                  isFreeTier={freeTierEligibility.storage}
+            <Card>
+              <CardHeader>
+                <CardTitle>User Load</CardTitle>
+                <CardDescription>Estimate your expected user count</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UserSlider 
+                  userCount={userCount} 
+                  onChange={handleUserCountChange} 
                 />
-                <div className="mt-2">
-                  <FreeTierToggle 
-                    id="storage-free-tier"
-                    label="Storage free tier"
-                    isEnabled={freeTierEligibility.storage}
-                    onChange={(value) => handleToggleFreeTier('storage', value)}
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Infrastructure Options</CardTitle>
+                <CardDescription>Configure additional services and free tier eligibility</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Storage Cost Input */}
+                <div>
+                  <StorageCostInput 
+                    gbStored={gbStorage}
+                    onChange={setGbStorage}
+                    cost={infrastructureCosts.storage}
+                    isFreeTier={freeTierEligibility.storage}
                   />
+                  <div className="mt-2">
+                    <FreeTierToggle 
+                      id="storage-free-tier"
+                      label="Storage free tier"
+                      isEnabled={freeTierEligibility.storage}
+                      onChange={(value) => handleToggleFreeTier('storage', value)}
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <Separator />
-              
-              {/* Auth Cost Input */}
-              <div>
-                <AuthCostInput 
-                  users={authUsers}
-                  onChange={setAuthUsers}
-                  cost={infrastructureCosts.authentication}
-                  isFreeTier={freeTierEligibility.authentication}
+                
+                <Separator />
+                
+                {/* Other Services Input */}
+                <OtherServicesInput 
+                  services={otherServices}
+                  onChange={handleOtherServicesChange}
+                  totalCost={infrastructureCosts.otherServices}
                 />
-                <div className="mt-2">
-                  <FreeTierToggle 
-                    id="auth-free-tier"
-                    label="Auth free tier"
-                    isEnabled={freeTierEligibility.authentication}
-                    onChange={(value) => handleToggleFreeTier('authentication', value)}
-                  />
+                
+                <Separator />
+                
+                {/* Free Tier Toggles for standard services */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <FreeTierToggle 
+                      id="hosting-free-tier"
+                      label="Hosting free tier"
+                      isEnabled={freeTierEligibility.hosting}
+                      onChange={(value) => handleToggleFreeTier('hosting', value)}
+                      cost={infrastructureCosts.hosting}
+                    />
+                  </div>
+                  <div>
+                    <FreeTierToggle 
+                      id="database-free-tier"
+                      label="Database free tier"
+                      isEnabled={freeTierEligibility.database}
+                      onChange={(value) => handleToggleFreeTier('database', value)}
+                      cost={infrastructureCosts.database}
+                    />
+                  </div>
+                  <div>
+                    <FreeTierToggle 
+                      id="cdn-free-tier"
+                      label="CDN free tier"
+                      isEnabled={freeTierEligibility.cdn}
+                      onChange={(value) => handleToggleFreeTier('cdn', value)}
+                      cost={infrastructureCosts.cdn}
+                    />
+                  </div>
+                  <div>
+                    <FreeTierToggle 
+                      id="cicd-free-tier"
+                      label="CI/CD free tier"
+                      isEnabled={freeTierEligibility.cicd}
+                      onChange={(value) => handleToggleFreeTier('cicd', value)}
+                      cost={infrastructureCosts.cicd}
+                    />
+                  </div>
+                  <div>
+                    <FreeTierToggle 
+                      id="authentication-free-tier"
+                      label="Authentication free tier"
+                      isEnabled={freeTierEligibility.authentication}
+                      onChange={(value) => handleToggleFreeTier('authentication', value)}
+                      cost={infrastructureCosts.authentication}
+                    />
+                  </div>
+                  <div>
+                    <FreeTierToggle 
+                      id="other-free-tier"
+                      label="Other services free tier"
+                      isEnabled={freeTierEligibility.otherServices}
+                      onChange={(value) => handleToggleFreeTier('otherServices', value)}
+                      cost={infrastructureCosts.otherServices}
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <Separator />
-              
-              {/* Other Services Input */}
-              <OtherServicesInput 
-                services={otherServices}
-                onChange={handleOtherServicesChange}
-                totalCost={infrastructureCosts.otherServices}
-              />
-              
-              <Separator />
-              
-              {/* Free Tier Toggles for standard services */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <FreeTierToggle 
-                    id="hosting-free-tier"
-                    label="Hosting free tier"
-                    isEnabled={freeTierEligibility.hosting}
-                    onChange={(value) => handleToggleFreeTier('hosting', value)}
-                  />
-                </div>
-                <div>
-                  <FreeTierToggle 
-                    id="database-free-tier"
-                    label="Database free tier"
-                    isEnabled={freeTierEligibility.database}
-                    onChange={(value) => handleToggleFreeTier('database', value)}
-                  />
-                </div>
-                <div>
-                  <FreeTierToggle 
-                    id="cdn-free-tier"
-                    label="CDN free tier"
-                    isEnabled={freeTierEligibility.cdn}
-                    onChange={(value) => handleToggleFreeTier('cdn', value)}
-                  />
-                </div>
-                <div>
-                  <FreeTierToggle 
-                    id="cicd-free-tier"
-                    label="CI/CD free tier"
-                    isEnabled={freeTierEligibility.cicd}
-                    onChange={(value) => handleToggleFreeTier('cicd', value)}
-                  />
-                </div>
-                <div>
-                  <FreeTierToggle 
-                    id="other-free-tier"
-                    label="Other services free tier"
-                    isEnabled={freeTierEligibility.otherServices}
-                    onChange={(value) => handleToggleFreeTier('otherServices', value)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Results Section */}
-        <div className="space-y-6">
+        <div className={showOnlyResults ? "col-span-2" : ""}>
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -352,10 +560,6 @@ const Calculator: React.FC = () => {
                   <CardTitle>Project Cost Breakdown</CardTitle>
                   <CardDescription>View detailed cost analysis</CardDescription>
                 </div>
-                <Button onClick={handleDownloadReport} className="flex items-center gap-2">
-                  <Download size={16} />
-                  <span>Download CSV</span>
-                </Button>
               </div>
             </CardHeader>
             <CardContent>

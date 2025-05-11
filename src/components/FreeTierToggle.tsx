@@ -7,19 +7,37 @@ interface FreeTierToggleProps {
   label: string;
   isEnabled: boolean;
   onChange: (isEnabled: boolean) => void;
+  cost?: number;
 }
 
-const FreeTierToggle: React.FC<FreeTierToggleProps> = ({ id, label, isEnabled, onChange }) => {
+const FreeTierToggle: React.FC<FreeTierToggleProps> = ({ id, label, isEnabled, onChange, cost }) => {
+  const formatCurrency = (amount: number | undefined) => {
+    if (amount === undefined) return '';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
-    <div className="flex items-center justify-between space-x-2">
-      <Label htmlFor={id} className="text-xs cursor-pointer flex-1">
-        {isEnabled ? 'Using free tier' : 'Use free tier?'}
-      </Label>
-      <Switch
-        id={id}
-        checked={isEnabled}
-        onCheckedChange={onChange}
-      />
+    <div className="space-y-1">
+      {cost !== undefined && (
+        <p className="text-xs text-muted-foreground">
+          {isEnabled ? 'Free' : formatCurrency(cost)}/mo
+        </p>
+      )}
+      <div className="flex items-center justify-between space-x-2">
+        <Label htmlFor={id} className="text-xs cursor-pointer flex-1">
+          {isEnabled ? 'Using free tier' : 'Use free tier?'}
+        </Label>
+        <Switch
+          id={id}
+          checked={isEnabled}
+          onCheckedChange={onChange}
+        />
+      </div>
     </div>
   );
 };
