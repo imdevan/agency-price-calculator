@@ -29,6 +29,9 @@ export type InfrastructureCost = {
   database: number;
   cdn: number;
   cicd: number;
+  storage: number;
+  authentication: number;
+  otherServices: number;
 };
 
 export type InfrastructureSourceCosts = {
@@ -36,4 +39,23 @@ export type InfrastructureSourceCosts = {
   database: InfrastructureCostDetail[];
   cdn: InfrastructureCostDetail[];
   cicd: InfrastructureCostDetail[];
+  storage: InfrastructureCostDetail[];
+  authentication: InfrastructureCostDetail[];
 };
+
+export type FreeTierEligibility = {
+  hosting: boolean;
+  database: boolean;
+  cdn: boolean;
+  cicd: boolean;
+  storage: boolean;
+  authentication: boolean;
+  otherServices: boolean;
+};
+
+export interface TimelineAdjustment {
+  baseWeeks: number;
+  adjustedWeeks: number;
+  multiplier: number;
+}
+

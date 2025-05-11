@@ -4,18 +4,19 @@ import { Scope, InfrastructureSourceCosts } from '@/types';
 import { INFRASTRUCTURE_SOURCE_COSTS } from '@/data';
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface InfrastructureSourceDetailsProps {
   selectedScope: Scope;
-  serviceType: 'hosting' | 'database' | 'cdn' | 'cicd';
+  serviceType: 'hosting' | 'database' | 'cdn' | 'cicd' | 'storage' | 'authentication';
   serviceName: string;
+  isFreeTier?: boolean;
 }
 
 const InfrastructureSourceDetails: React.FC<InfrastructureSourceDetailsProps> = ({
   selectedScope,
   serviceType,
-  serviceName
+  serviceName,
+  isFreeTier = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const sourceCosts = INFRASTRUCTURE_SOURCE_COSTS[selectedScope][serviceType];
@@ -44,6 +45,9 @@ const InfrastructureSourceDetails: React.FC<InfrastructureSourceDetailsProps> = 
       {isExpanded && (
         <div className="bg-muted/50 rounded-md p-3 space-y-2 text-sm">
           <h4 className="font-medium text-xs uppercase tracking-wide mb-2 text-muted-foreground">Service Options</h4>
+          {isFreeTier ? (
+            <div className="text-green-600 text-sm pb-2">Using free tier</div>
+          ) : null}
           {sourceCosts.map((source, index) => (
             <div key={index} className="border-b border-border/30 pb-2 last:border-0 last:pb-0">
               <div className="flex justify-between">

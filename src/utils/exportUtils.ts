@@ -1,12 +1,23 @@
-
-import { Role, Scope, InfrastructureCost } from '@/types';
+import { Role, Scope, InfrastructureCost, TimelineAdjustment, FreeTierEligibility } from '@/types';
 import { PROJECT_SCOPES, TIMELINE_CALCULATOR, INFRASTRUCTURE_SOURCE_COSTS } from '@/data';
+
+interface OtherService {
+  id: string;
+  name: string;
+  cost: number;
+  description?: string;
+}
 
 export const generateCsvData = (
   roles: Role[],
   selectedScope: Scope,
   infrastructureCosts: InfrastructureCost,
-  userCount: number
+  userCount: number,
+  timeline: TimelineAdjustment,
+  freeTierEligibility: FreeTierEligibility,
+  gbStorage: number,
+  authUsers: number,
+  otherServices: OtherService[]
 ) => {
   const scope = PROJECT_SCOPES[selectedScope];
   const roleCosts = roles.map(role => {
@@ -15,15 +26,40 @@ export const generateCsvData = (
     return { ...role, hours, cost };
   });
 
-  const totalDevelopmentCost = roleCosts.reduce((total, role) => total + role.cost, 0);
-  const totalInfrastructureCost = Object.values(infrastructureCosts).reduce((sum, cost) => sum + cost, 0);
+  // Calculate weekly costs
+  const weeklyRoleCosts = roles.map(role => {
+    const weeklyCost = role.hourlyRate * role.weeklyHours;
+    return { ...role, weeklyCost };
+  });
+  const totalWeeklyCost = weeklyRoleCosts.reduce((total, role) => total + role.weeklyCost, 0);
+  
+  // Development costs based on timeline
+  const totalDevelopmentCost = totalWeeklyCost * timeline.adjustedWeeks;
+  
+  // Infrastructure costs
+  const totalInfrastructureCost = Object.keys(infrastructureCosts).reduce((sum, key) => {
+    const costKey = key as keyof InfrastructureCost;
+    const isFree = freeTierEligibility[costKey as keyof FreeTierEligibility];
+    return sum + (isFree ? 0 : infrastructureCosts[costKey]);
+  }, 0);
+  
   const monthlyInfrastructureCost = totalInfrastructureCost;
   const yearlyInfrastructureCost = monthlyInfrastructureCost * 12;
   
-  // Calculate timeline
-  const totalHours = roleCosts.reduce((sum, role) => sum + role.hours, 0);
-  const developmentWeeks = Math.ceil(totalHours / 
-    (TIMELINE_CALCULATOR.teamSize * TIMELINE_CALCULATOR.hoursPerWeekPerDev));
+  // Format timeline for display
+  const formatTimeline = (weeks: number) => {
+    if (weeks >= 52) {
+      const years = Math.floor(weeks / 52);
+      const remainingWeeks = weeks % 52;
+      return `${years} year${years > 1 ? 's' : ''}${remainingWeeks > 0 ? ` ${remainingWeeks} week${remainingWeeks > 1 ? 's' : ''}` : ''}`;
+    } else if (weeks >= 8) {
+      const months = Math.floor(weeks / 4.33);
+      const remainingWeeks = Math.round(weeks % 4.33);
+      return `${months} month${months > 1 ? 's' : ''}${remainingWeeks > 0 ? ` ${remainingWeeks} week${remainingWeeks > 1 ? 's' : ''}` : ''}`;
+    } else {
+      return `${weeks} week${weeks > 1 ? 's' : ''}`;
+    }
+  };
 
   // Build CSV content
   let csvContent = "Studio Price Calculator Report\n\n";
@@ -32,28 +68,47 @@ export const generateCsvData = (
   csvContent += "SUMMARY\n";
   csvContent += `Project Type,${scope.label}\n`;
   csvContent += `Estimated Users,${userCount}\n`;
+  csvContent += `Estimated Storage,${gbStorage} GB\n`;
+  csvContent += `Estimated Auth Users,${authUsers} MAU\n`;
+  csvContent += `Estimated Timeline,${formatTimeline(timeline.adjustedWeeks)} (${timeline.multiplier.toFixed(2)}x base estimate)\n`;
+  csvContent += `Weekly Development Cost,$${totalWeeklyCost}\n`;
   csvContent += `Total Development Cost,$${totalDevelopmentCost}\n`;
-  csvContent += `Estimated Timeline,${developmentWeeks} weeks\n`;
   csvContent += `Monthly Infrastructure Cost,$${monthlyInfrastructureCost}\n`;
   csvContent += `Yearly Infrastructure Cost,$${yearlyInfrastructureCost}\n\n`;
 
   // Development Costs
   csvContent += "DEVELOPMENT COSTS\n";
-  csvContent += "Role,Hours,Rate,Cost\n";
-  roleCosts.forEach(role => {
-    csvContent += `${role.title},${role.hours},$${role.hourlyRate},$${role.cost}\n`;
+  csvContent += "Role,Weekly Hours,Hourly Rate,Weekly Cost\n";
+  weeklyRoleCosts.forEach(role => {
+    if (role.weeklyHours > 0) {
+      csvContent += `${role.title},${role.weeklyHours},$${role.hourlyRate},$${role.weeklyCost}\n`;
+    }
   });
-  csvContent += `TOTAL,,,\$${totalDevelopmentCost}\n\n`;
+  csvContent += `TOTAL WEEKLY,,,\$${totalWeeklyCost}\n`;
+  csvContent += `TOTAL FOR TIMELINE (${formatTimeline(timeline.adjustedWeeks)}),,,\$${totalDevelopmentCost}\n\n`;
 
   // Infrastructure Costs
   csvContent += "INFRASTRUCTURE COSTS\n";
-  csvContent += "Service,Monthly Cost\n";
-  csvContent += `Hosting,$${infrastructureCosts.hosting}\n`;
-  csvContent += `Database,$${infrastructureCosts.database}\n`;
-  csvContent += `CDN,$${infrastructureCosts.cdn}\n`;
-  csvContent += `CI/CD,$${infrastructureCosts.cicd}\n`;
-  csvContent += `TOTAL MONTHLY,$${monthlyInfrastructureCost}\n`;
-  csvContent += `TOTAL YEARLY,$${yearlyInfrastructureCost}\n\n`;
+  csvContent += "Service,Monthly Cost,Free Tier\n";
+  csvContent += `Hosting,${freeTierEligibility.hosting ? "Free Tier" : "$" + infrastructureCosts.hosting},${freeTierEligibility.hosting ? "Yes" : "No"}\n`;
+  csvContent += `Database,${freeTierEligibility.database ? "Free Tier" : "$" + infrastructureCosts.database},${freeTierEligibility.database ? "Yes" : "No"}\n`;
+  csvContent += `CDN,${freeTierEligibility.cdn ? "Free Tier" : "$" + infrastructureCosts.cdn},${freeTierEligibility.cdn ? "Yes" : "No"}\n`;
+  csvContent += `CI/CD,${freeTierEligibility.cicd ? "Free Tier" : "$" + infrastructureCosts.cicd},${freeTierEligibility.cicd ? "Yes" : "No"}\n`;
+  csvContent += `Storage,${freeTierEligibility.storage ? "Free Tier" : "$" + infrastructureCosts.storage},${freeTierEligibility.storage ? "Yes" : "No"}\n`;
+  csvContent += `Authentication,${freeTierEligibility.authentication ? "Free Tier" : "$" + infrastructureCosts.authentication},${freeTierEligibility.authentication ? "Yes" : "No"}\n`;
+
+  // Other Services
+  if (otherServices.length > 0) {
+    csvContent += "\nOTHER SERVICES\n";
+    csvContent += "Service,Monthly Cost\n";
+    otherServices.forEach(service => {
+      csvContent += `${service.name},$${service.cost}\n`;
+    });
+    csvContent += `TOTAL OTHER SERVICES,$${infrastructureCosts.otherServices}\n`;
+  }
+  
+  csvContent += `\nTOTAL MONTHLY INFRASTRUCTURE,$${monthlyInfrastructureCost}\n`;
+  csvContent += `TOTAL YEARLY INFRASTRUCTURE,$${yearlyInfrastructureCost}\n\n`;
 
   // Infrastructure Source Services
   csvContent += "INFRASTRUCTURE SOURCE SERVICES\n";
@@ -85,11 +140,26 @@ export const generateCsvData = (
   INFRASTRUCTURE_SOURCE_COSTS[selectedScope].cicd.forEach(source => {
     csvContent += `${source.serviceName},$${source.baseCost},${source.description}\n`;
   });
+  
+  // Storage services
+  csvContent += "\nSTORAGE SERVICES\n";
+  csvContent += "Service,Cost,Description\n";
+  INFRASTRUCTURE_SOURCE_COSTS[selectedScope].storage.forEach(source => {
+    csvContent += `${source.serviceName},$${source.baseCost},${source.description}\n`;
+  });
+  
+  // Authentication services
+  csvContent += "\nAUTHENTICATION SERVICES\n";
+  csvContent += "Service,Cost,Description\n";
+  INFRASTRUCTURE_SOURCE_COSTS[selectedScope].authentication.forEach(source => {
+    csvContent += `${source.serviceName},$${source.baseCost},${source.description}\n`;
+  });
 
   // Assumptions
   csvContent += "\nCALCULATION ASSUMPTIONS\n";
   csvContent += `Team Size,${TIMELINE_CALCULATOR.teamSize} developers\n`;
   csvContent += `Productive Hours,${TIMELINE_CALCULATOR.hoursPerWeekPerDev} hours/dev/week\n`;
+  csvContent += `Timeline Adjustment,${timeline.multiplier.toFixed(2)}x base estimate\n`;
 
   return csvContent;
 };
@@ -98,9 +168,24 @@ export const downloadCsv = (
   roles: Role[],
   selectedScope: Scope,
   infrastructureCosts: InfrastructureCost,
-  userCount: number
+  userCount: number,
+  timeline: TimelineAdjustment,
+  freeTierEligibility: FreeTierEligibility,
+  gbStorage: number,
+  authUsers: number,
+  otherServices: any[]
 ) => {
-  const csvData = generateCsvData(roles, selectedScope, infrastructureCosts, userCount);
+  const csvData = generateCsvData(
+    roles, 
+    selectedScope, 
+    infrastructureCosts, 
+    userCount, 
+    timeline, 
+    freeTierEligibility,
+    gbStorage,
+    authUsers,
+    otherServices
+  );
   const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

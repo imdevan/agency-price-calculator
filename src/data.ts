@@ -1,3 +1,4 @@
+
 import { ProjectScope, InfrastructureCost, InfrastructureSourceCosts } from './types';
 
 export const DEFAULT_ROLES = [
@@ -49,18 +50,27 @@ export const BASE_INFRASTRUCTURE_COSTS: Record<string, InfrastructureCost> = {
     database: 15,
     cdn: 10,
     cicd: 0,
+    storage: 5,
+    authentication: 0,
+    otherServices: 0,
   },
   mvp: {
     hosting: 50,
     database: 30,
     cdn: 25,
     cicd: 30,
+    storage: 15,
+    authentication: 10,
+    otherServices: 0,
   },
   production: {
     hosting: 150,
     database: 100,
     cdn: 75,
     cicd: 100,
+    storage: 40,
+    authentication: 30,
+    otherServices: 0,
   },
 };
 
@@ -83,6 +93,16 @@ export const INFRASTRUCTURE_SOURCE_COSTS: Record<string, InfrastructureSourceCos
     ],
     cicd: [
       { serviceName: "GitHub Actions", baseCost: 0, description: "Free tier minutes for public repositories" }
+    ],
+    storage: [
+      { serviceName: "AWS S3 Free Tier", baseCost: 0, description: "5GB storage free for 12 months" },
+      { serviceName: "Firebase Storage Free", baseCost: 0, description: "5GB storage and 1GB daily transfer" },
+      { serviceName: "Cloudinary Free", baseCost: 0, description: "25 credits (~25GB)" }
+    ],
+    authentication: [
+      { serviceName: "Firebase Auth", baseCost: 0, description: "Up to 50K monthly active users" },
+      { serviceName: "Auth0 Free", baseCost: 0, description: "Up to 7K active users" },
+      { serviceName: "Supabase Auth", baseCost: 0, description: "Free tier with rate limits" }
     ]
   },
   mvp: {
@@ -103,6 +123,16 @@ export const INFRASTRUCTURE_SOURCE_COSTS: Record<string, InfrastructureSourceCos
     cicd: [
       { serviceName: "GitHub Actions Pro", baseCost: 10, description: "Extended minutes for private repositories" },
       { serviceName: "CircleCI Small Team", baseCost: 20, description: "Team plan with additional containers" }
+    ],
+    storage: [
+      { serviceName: "AWS S3 Standard", baseCost: 5, description: "~50GB with standard access" },
+      { serviceName: "Cloudinary Plus", baseCost: 10, description: "100 credits (~100GB)" },
+      { serviceName: "Digital Ocean Spaces", baseCost: 5, description: "50GB with 250GB transfer" }
+    ],
+    authentication: [
+      { serviceName: "Firebase Auth Plus", baseCost: 5, description: "Over 50K monthly active users" },
+      { serviceName: "Auth0 Developer", baseCost: 10, description: "7K+ monthly active users" },
+      { serviceName: "Supabase Auth Pro", baseCost: 5, description: "Higher limits, priority support" }
     ]
   },
   production: {
@@ -125,6 +155,16 @@ export const INFRASTRUCTURE_SOURCE_COSTS: Record<string, InfrastructureSourceCos
       { serviceName: "GitHub Enterprise", baseCost: 40, description: "Enterprise plan with advanced security" },
       { serviceName: "CircleCI Performance", baseCost: 30, description: "High-performance CI/CD with parallel jobs" },
       { serviceName: "Jenkins Cloud", baseCost: 30, description: "Managed Jenkins environment with auto-scaling" }
+    ],
+    storage: [
+      { serviceName: "AWS S3 Enterprise", baseCost: 20, description: "~200GB with multi-region replication" },
+      { serviceName: "Google Cloud Storage", baseCost: 15, description: "Standard storage with high durability" },
+      { serviceName: "Cloudinary Advanced", baseCost: 25, description: "225+ credits (~225GB+)" }
+    ],
+    authentication: [
+      { serviceName: "Auth0 Professional", baseCost: 25, description: "Enterprise features, SSO, MFA" },
+      { serviceName: "Firebase Auth Enterprise", baseCost: 15, description: "Enterprise level, advanced features" },
+      { serviceName: "Supabase Auth Enterprise", baseCost: 20, description: "Enterprise scale and support" }
     ]
   }
 };
@@ -135,6 +175,9 @@ export const USER_COST_MULTIPLIER = {
   database: 0.25, // 25% increase per 1000 users
   cdn: 0.3,       // 30% increase per 1000 users
   cicd: 0.1,      // 10% increase per 1000 users
+  storage: 0.15,  // 15% increase per 1000 users
+  authentication: 0.2, // 20% increase per 1000 users
+  otherServices: 0,    // No user-based scaling for other services
 };
 
 // Timeline in weeks based on role hours
@@ -142,3 +185,16 @@ export const TIMELINE_CALCULATOR = {
   teamSize: 3,         // Assume average team size
   hoursPerWeekPerDev: 35, // Productive hours per developer per week
 };
+
+// Storage cost calculator
+export const STORAGE_COST_CALCULATOR = {
+  pricePerGBPerMonth: 0.023, // Average price per GB per month
+  baseFreeGB: 5,        // Average free tier storage
+};
+
+// Authentication cost calculator
+export const AUTHENTICATION_COST_CALCULATOR = {
+  freeMAUs: 7000,         // Average free MAUs across services
+  pricePerMAUBeyondFree: 0.0015, // Average price per MAU beyond free tier
+};
+

@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Role, Scope, InfrastructureCost } from '@/types';
-import { PROJECT_SCOPES, TIMELINE_CALCULATOR } from '@/data';
+import { Role, Scope, InfrastructureCost, TimelineAdjustment, FreeTierEligibility } from '@/types';
+import { PROJECT_SCOPES } from '@/data';
 import InfrastructureSourceDetails from './InfrastructureSourceDetails';
 
 interface CostBreakdownProps {
@@ -10,6 +10,8 @@ interface CostBreakdownProps {
   selectedScope: Scope;
   infrastructureCosts: InfrastructureCost;
   userCount: number;
+  timeline: TimelineAdjustment;
+  freeTierEligibility: FreeTierEligibility;
 }
 
 const CostBreakdown: React.FC<CostBreakdownProps> = ({
@@ -17,6 +19,8 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   selectedScope,
   infrastructureCosts,
   userCount,
+  timeline,
+  freeTierEligibility,
 }) => {
   // Calculate weekly costs based on hourly rate and weekly hours
   const weeklyRoleCosts = roles.map(role => {
@@ -26,25 +30,41 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
 
   const totalWeeklyCost = weeklyRoleCosts.reduce((total, role) => total + role.weeklyCost, 0);
   const monthlyDevelopmentCost = totalWeeklyCost * 4.33; // Average weeks per month
-  const yearlyDevelopmentCost = monthlyDevelopmentCost * 12;
   
-  const totalInfrastructureCost = Object.values(infrastructureCosts).reduce((sum, cost) => sum + cost, 0);
+  // Calculate total development cost based on adjusted timeline
+  const totalDevelopmentCost = totalWeeklyCost * timeline.adjustedWeeks;
+  
+  // Calculate infrastructure costs
+  const totalInfrastructureCost = Object.keys(infrastructureCosts).reduce((sum, key) => {
+    const costKey = key as keyof InfrastructureCost;
+    const isFree = freeTierEligibility[costKey as keyof FreeTierEligibility];
+    return sum + (isFree ? 0 : infrastructureCosts[costKey]);
+  }, 0);
+  
   const monthlyInfrastructureCost = totalInfrastructureCost;
   const yearlyInfrastructureCost = monthlyInfrastructureCost * 12;
   
+  // For yearly development costs, we cap it based on project timeline
+  const yearlyDevelopmentCost = timeline.adjustedWeeks < 52 ? totalDevelopmentCost : monthlyDevelopmentCost * 12;
+  
+  // Monthly and yearly totals
   const monthlyTotalCost = monthlyDevelopmentCost + monthlyInfrastructureCost;
   const yearlyTotalCost = yearlyDevelopmentCost + yearlyInfrastructureCost;
   
-  // Calculate timeline - now based on weekly hours commitment
-  const totalWeeklyHours = weeklyRoleCosts.reduce((sum, role) => sum + role.weeklyHours, 0);
-  const developmentWeeks = totalWeeklyHours > 0 ? 
-    Math.ceil(PROJECT_SCOPES[selectedScope].developmentTimeMultiplier * 4) : 
-    "N/A (set weekly hours)";
-  
-  // Calculate total development cost based on timeline
-  const totalDevelopmentCost = typeof developmentWeeks === 'number' ? 
-    totalWeeklyCost * developmentWeeks : 
-    "N/A";
+  // Format timeline for display
+  const formatTimeline = (weeks: number) => {
+    if (weeks >= 52) {
+      const years = Math.floor(weeks / 52);
+      const remainingWeeks = weeks % 52;
+      return `${years} year${years > 1 ? 's' : ''}${remainingWeeks > 0 ? ` ${remainingWeeks} week${remainingWeeks > 1 ? 's' : ''}` : ''}`;
+    } else if (weeks >= 8) {
+      const months = Math.floor(weeks / 4.33);
+      const remainingWeeks = Math.round(weeks % 4.33);
+      return `${months} month${months > 1 ? 's' : ''}${remainingWeeks > 0 ? ` ${remainingWeeks} week${remainingWeeks > 1 ? 's' : ''}` : ''}`;
+    } else {
+      return `${weeks} week${weeks > 1 ? 's' : ''}`;
+    }
+  };
   
   const formatCurrency = (amount: number | string) => {
     if (typeof amount === 'string') return amount;
@@ -73,6 +93,14 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
               <span className="font-semibold">{formatCurrency(totalWeeklyCost)}</span>
             </div>
             <div className="flex justify-between text-base">
+              <span>Monthly Development Cost:</span>
+              <span className="font-semibold">{formatCurrency(monthlyDevelopmentCost)}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span>Monthly Infrastructure Cost:</span>
+              <span className="font-semibold">{formatCurrency(monthlyInfrastructureCost)}</span>
+            </div>
+            <div className="flex justify-between text-base">
               <span>Monthly Total Cost:</span>
               <span className="font-semibold">{formatCurrency(monthlyTotalCost)}</span>
             </div>
@@ -82,7 +110,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
             </div>
             <div className="flex justify-between text-base">
               <span>Estimated Timeline:</span>
-              <span className="font-semibold">{typeof developmentWeeks === 'number' ? `${developmentWeeks} weeks` : developmentWeeks}</span>
+              <span className="font-semibold">{formatTimeline(timeline.adjustedWeeks)}</span>
             </div>
             <div className="flex justify-between text-base">
               <span>Estimated Development Cost:</span>
@@ -123,6 +151,10 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
                 <td colSpan={3} className="text-right pt-2">Total Monthly Development Cost:</td>
                 <td className="text-right pt-2">{formatCurrency(monthlyDevelopmentCost)}</td>
               </tr>
+              <tr className="font-medium">
+                <td colSpan={3} className="text-right pt-2">Total Development Cost (Timeline):</td>
+                <td className="text-right pt-2">{formatCurrency(totalDevelopmentCost)}</td>
+              </tr>
             </tbody>
           </table>
         </CardContent>
@@ -145,30 +177,108 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
               <tr className="border-b border-gray-100">
                 <td className="py-2">
                   <div>Hosting</div>
-                  <InfrastructureSourceDetails selectedScope={selectedScope} serviceType="hosting" serviceName="Hosting" />
+                  <InfrastructureSourceDetails 
+                    selectedScope={selectedScope} 
+                    serviceType="hosting" 
+                    serviceName="Hosting"
+                    isFreeTier={freeTierEligibility.hosting} 
+                  />
                 </td>
-                <td className="text-right py-2">{formatCurrency(infrastructureCosts.hosting)}</td>
+                <td className="text-right py-2">
+                  {freeTierEligibility.hosting ? 
+                    <span className="text-green-600">Free Tier</span> : 
+                    formatCurrency(infrastructureCosts.hosting)}
+                </td>
               </tr>
               <tr className="border-b border-gray-100">
                 <td className="py-2">
                   <div>Database</div>
-                  <InfrastructureSourceDetails selectedScope={selectedScope} serviceType="database" serviceName="Database" />
+                  <InfrastructureSourceDetails 
+                    selectedScope={selectedScope} 
+                    serviceType="database" 
+                    serviceName="Database" 
+                    isFreeTier={freeTierEligibility.database}
+                  />
                 </td>
-                <td className="text-right py-2">{formatCurrency(infrastructureCosts.database)}</td>
+                <td className="text-right py-2">
+                  {freeTierEligibility.database ? 
+                    <span className="text-green-600">Free Tier</span> : 
+                    formatCurrency(infrastructureCosts.database)}
+                </td>
               </tr>
               <tr className="border-b border-gray-100">
                 <td className="py-2">
                   <div>CDN</div>
-                  <InfrastructureSourceDetails selectedScope={selectedScope} serviceType="cdn" serviceName="CDN" />
+                  <InfrastructureSourceDetails 
+                    selectedScope={selectedScope} 
+                    serviceType="cdn" 
+                    serviceName="CDN" 
+                    isFreeTier={freeTierEligibility.cdn}
+                  />
                 </td>
-                <td className="text-right py-2">{formatCurrency(infrastructureCosts.cdn)}</td>
+                <td className="text-right py-2">
+                  {freeTierEligibility.cdn ? 
+                    <span className="text-green-600">Free Tier</span> : 
+                    formatCurrency(infrastructureCosts.cdn)}
+                </td>
               </tr>
               <tr className="border-b border-gray-100">
                 <td className="py-2">
                   <div>CI/CD</div>
-                  <InfrastructureSourceDetails selectedScope={selectedScope} serviceType="cicd" serviceName="CI/CD" />
+                  <InfrastructureSourceDetails 
+                    selectedScope={selectedScope} 
+                    serviceType="cicd" 
+                    serviceName="CI/CD" 
+                    isFreeTier={freeTierEligibility.cicd}
+                  />
                 </td>
-                <td className="text-right py-2">{formatCurrency(infrastructureCosts.cicd)}</td>
+                <td className="text-right py-2">
+                  {freeTierEligibility.cicd ? 
+                    <span className="text-green-600">Free Tier</span> : 
+                    formatCurrency(infrastructureCosts.cicd)}
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-2">
+                  <div>Storage</div>
+                  <InfrastructureSourceDetails 
+                    selectedScope={selectedScope} 
+                    serviceType="storage" 
+                    serviceName="Storage" 
+                    isFreeTier={freeTierEligibility.storage}
+                  />
+                </td>
+                <td className="text-right py-2">
+                  {freeTierEligibility.storage ? 
+                    <span className="text-green-600">Free Tier</span> : 
+                    formatCurrency(infrastructureCosts.storage)}
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-2">
+                  <div>Authentication</div>
+                  <InfrastructureSourceDetails 
+                    selectedScope={selectedScope} 
+                    serviceType="authentication" 
+                    serviceName="Authentication" 
+                    isFreeTier={freeTierEligibility.authentication}
+                  />
+                </td>
+                <td className="text-right py-2">
+                  {freeTierEligibility.authentication ? 
+                    <span className="text-green-600">Free Tier</span> : 
+                    formatCurrency(infrastructureCosts.authentication)}
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-2">
+                  <div>Other Services</div>
+                </td>
+                <td className="text-right py-2">
+                  {freeTierEligibility.otherServices ? 
+                    <span className="text-green-600">Free Tier</span> : 
+                    formatCurrency(infrastructureCosts.otherServices)}
+                </td>
               </tr>
               <tr className="font-medium">
                 <td className="text-right pt-2">Total Monthly:</td>
