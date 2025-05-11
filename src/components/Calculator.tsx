@@ -491,29 +491,6 @@ const Calculator: React.FC = () => {
                 <CardDescription>Configure additional services and free tier eligibility</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Global Free Tier Toggle */}
-                <div className="pb-3 border-b">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium">Global Free Tier Control</h3>
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleToggleAllFreeTiers(true)}
-                      >
-                        Enable All
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleToggleAllFreeTiers(false)}
-                      >
-                        Disable All
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                
                 {/* Storage Cost Input */}
                 <div>
                   <StorageCostInput 
@@ -599,6 +576,30 @@ const Calculator: React.FC = () => {
                       onChange={(value) => handleToggleFreeTier('otherServices', value)}
                       cost={infrastructureCosts.otherServices}
                     />
+                  </div>
+                </div>
+
+
+                {/* Global Free Tier Toggle */}
+                <div>
+                  <div className="flex justify-between items-center">
+                    {/* <h3 className="font-medium">Global Free Tier Control</h3> */}
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleToggleAllFreeTiers(true)}
+                      >
+                        Enable All
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleToggleAllFreeTiers(false)}
+                      >
+                        Disable All
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
