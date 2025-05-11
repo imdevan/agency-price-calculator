@@ -22,6 +22,7 @@ import FreeTierToggle from './FreeTierToggle';
 import StorageCostInput from './StorageCostInput';
 import OtherServicesInput from './OtherServicesInput';
 import { useSearchParams, useNavigate } from "react-router-dom";
+import RetainerEstimator from './RetainerEstimator';
 
 interface OtherService {
   id: string;
@@ -59,6 +60,9 @@ const Calculator: React.FC = () => {
     authentication: false,
     otherServices: false
   });
+  
+  // Retainer state
+  const [retainerHours, setRetainerHours] = useState<number>(20);
 
   // Timeline state
   const [timeline, setTimeline] = useState<TimelineAdjustment>({
@@ -185,6 +189,9 @@ const Calculator: React.FC = () => {
       params.set('resultsOnly', 'true');
     }
     
+    // Add retainer hours
+    params.set('retainerHours', retainerHours.toString());
+    
     setSearchParams(params, { replace: true });
   }, [
     selectedScope, 
@@ -194,7 +201,8 @@ const Calculator: React.FC = () => {
     roles, 
     timeline, 
     otherServices,
-    showOnlyResults
+    showOnlyResults,
+    retainerHours
   ]);
 
   // Calculate base timeline when scope or role hours change
@@ -291,9 +299,31 @@ const Calculator: React.FC = () => {
       [service]: value
     }));
   };
+  
+  // Global free tier toggle handler
+  const handleToggleAllFreeTiers = (enableFree: boolean) => {
+    setFreeTierEligibility({
+      hosting: enableFree,
+      database: enableFree,
+      cdn: enableFree,
+      cicd: enableFree,
+      storage: enableFree,
+      authentication: enableFree,
+      otherServices: enableFree
+    });
+    
+    toast({
+      title: enableFree ? "Free Tiers Enabled" : "Free Tiers Disabled",
+      description: enableFree ? "All services set to free tier" : "All services set to paid tier",
+    });
+  };
 
   const handleOtherServicesChange = (services: OtherService[]) => {
     setOtherServices(services);
+  };
+
+  const handleRetainerHoursChange = (hours: number) => {
+    setRetainerHours(hours);
   };
 
   const handleDownloadReport = () => {
@@ -413,6 +443,7 @@ const Calculator: React.FC = () => {
                     key={role.id} 
                     role={role} 
                     onChange={handleRoleChange} 
+                    totalProjectHours={role.weeklyHours * timeline.adjustedWeeks}
                   />
                 ))}
               </CardContent>
@@ -460,6 +491,29 @@ const Calculator: React.FC = () => {
                 <CardDescription>Configure additional services and free tier eligibility</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Global Free Tier Toggle */}
+                <div className="pb-3 border-b">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium">Global Free Tier Control</h3>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleToggleAllFreeTiers(true)}
+                      >
+                        Enable All
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleToggleAllFreeTiers(false)}
+                      >
+                        Disable All
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
                 {/* Storage Cost Input */}
                 <div>
                   <StorageCostInput 
@@ -468,14 +522,6 @@ const Calculator: React.FC = () => {
                     cost={infrastructureCosts.storage}
                     isFreeTier={freeTierEligibility.storage}
                   />
-                  <div className="mt-2">
-                    <FreeTierToggle 
-                      id="storage-free-tier"
-                      label="Storage free tier"
-                      isEnabled={freeTierEligibility.storage}
-                      onChange={(value) => handleToggleFreeTier('storage', value)}
-                    />
-                  </div>
                 </div>
                 
                 <Separator />
@@ -530,7 +576,7 @@ const Calculator: React.FC = () => {
                   <div>
                     <FreeTierToggle 
                       id="authentication-free-tier"
-                      label="Authentication "
+                      label="Authentication"
                       isEnabled={freeTierEligibility.authentication}
                       onChange={(value) => handleToggleFreeTier('authentication', value)}
                       cost={infrastructureCosts.authentication}
@@ -538,14 +584,38 @@ const Calculator: React.FC = () => {
                   </div>
                   <div>
                     <FreeTierToggle 
+                      id="storage-free-tier"
+                      label="Storage"
+                      isEnabled={freeTierEligibility.storage}
+                      onChange={(value) => handleToggleFreeTier('storage', value)}
+                      cost={infrastructureCosts.storage}
+                    />
+                  </div>
+                  <div>
+                    <FreeTierToggle 
                       id="other-free-tier"
-                      label="Other services "
+                      label="Other services"
                       isEnabled={freeTierEligibility.otherServices}
                       onChange={(value) => handleToggleFreeTier('otherServices', value)}
                       cost={infrastructureCosts.otherServices}
                     />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+            
+            {/* Retainer Estimator Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Ongoing Support Retainer</CardTitle>
+                <CardDescription>Estimate monthly support and maintenance costs</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RetainerEstimator
+                  roles={roles}
+                  retainerHours={retainerHours}
+                  onRetainerHoursChange={handleRetainerHoursChange}
+                />
               </CardContent>
             </Card>
           </div>
@@ -570,6 +640,7 @@ const Calculator: React.FC = () => {
                 userCount={userCount}
                 timeline={timeline}
                 freeTierEligibility={freeTierEligibility}
+                retainerHours={retainerHours}
               />
             </CardContent>
           </Card>

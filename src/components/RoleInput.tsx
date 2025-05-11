@@ -1,67 +1,76 @@
 
 import React from 'react';
-import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Role } from '@/types';
 
 interface RoleInputProps {
   role: Role;
   onChange: (id: string, field: 'hourlyRate' | 'weeklyHours', value: number) => void;
+  totalProjectHours?: number;
 }
 
-const RoleInput: React.FC<RoleInputProps> = ({ role, onChange }) => {
-  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const rate = value === "" ? 0 : parseFloat(value);
-    onChange(role.id, 'hourlyRate', rate);
+const RoleInput: React.FC<RoleInputProps> = ({ role, onChange, totalProjectHours }) => {
+  const handleHourlyRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value)) {
+      onChange(role.id, 'hourlyRate', value);
+    }
   };
-  
-  const handleHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const hours = value === "" ? 0 : parseFloat(value);
-    onChange(role.id, 'weeklyHours', hours);
+
+  const handleWeeklyHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value)) {
+      onChange(role.id, 'weeklyHours', value);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
   };
 
   return (
-    <div className="flex flex-col space-y-2 mb-4">
-      <div className="font-medium">{role.title}</div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor={`rate-${role.id}`} className="text-sm font-normal text-muted-foreground mb-1 block">
-            Hourly Rate ($)
-          </Label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <span className="text-gray-500">$</span>
-            </div>
-            <Input
-              id={`rate-${role.id}`}
-              type="number"
-              min="0"
-              step="1"
-              value={role.hourlyRate.toString()}
-              onChange={handleRateChange}
-              className="pl-6"
-            />
+    <Card className="p-4 mb-4">
+      <div className="font-medium text-lg mb-2">{role.title}</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+        <div className="space-y-2">
+          <Label htmlFor={`${role.id}-hourly-rate`}>Hourly Rate</Label>
+          <Input
+            id={`${role.id}-hourly-rate`}
+            type="number"
+            value={role.hourlyRate}
+            onChange={handleHourlyRateChange}
+            min={0}
+            className="h-9"
+          />
+          <div className="text-xs text-muted-foreground">
+            {formatCurrency(role.hourlyRate)} per hour
           </div>
         </div>
-        
-        <div>
-          <Label htmlFor={`hours-${role.id}`} className="text-sm font-normal text-muted-foreground mb-1 block">
-            Weekly Hours
-          </Label>
+        <div className="space-y-2">
+          <Label htmlFor={`${role.id}-weekly-hours`}>Weekly Hours</Label>
           <Input
-            id={`hours-${role.id}`}
+            id={`${role.id}-weekly-hours`}
             type="number"
-            min="0"
-            step="0.5"
-            max="40"
-            value={role.weeklyHours.toString()}
-            onChange={handleHoursChange}
+            value={role.weeklyHours}
+            onChange={handleWeeklyHoursChange}
+            min={0}
+            className="h-9"
           />
+          {totalProjectHours !== undefined && totalProjectHours > 0 && (
+            <div className="text-xs text-muted-foreground">
+              Total: {totalProjectHours} hours over project timeline
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
