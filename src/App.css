@@ -99,14 +99,61 @@
   }
 }
 
+.dev-link {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transform-style: preserve-3d;
+  transform: perspective(1000px);
+}
+
 .dev-link:hover {
   animation: rainbow-shadow 3s infinite;
   letter-spacing: 0.5px;
+  background: linear-gradient(
+    to right,
+    rgba(155, 135, 245, 0.1),
+    rgba(217, 70, 239, 0.1),
+    rgba(249, 115, 22, 0.1),
+    rgba(14, 165, 233, 0.1),
+    rgba(139, 92, 246, 0.1)
+  );
+  transform: translateY(-2px) perspective(1000px);
 }
 
 .dev-link:hover svg {
   filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.7));
-  transform: rotate(15deg);
+  transform: rotate(15deg) translateZ(10px);
   transition: all 0.3s ease;
 }
 
+.dev-link:hover span {
+  background: linear-gradient(
+    to right,
+    #9b87f5,
+    #D946EF,
+    #F97316,
+    #0EA5E9,
+    #8B5CF6
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: all 0.5s ease;
+}
+
+/* Add a subtle pulse animation when hovering */
+@keyframes subtle-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+  }
+}
+
+.dev-link:hover {
+  animation: rainbow-shadow 3s infinite, subtle-pulse 2s infinite;
+}
