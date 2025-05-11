@@ -384,17 +384,17 @@ const Calculator: React.FC = () => {
   };
 
   return (
-    <div className="container py-8 max-w-7xl mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Studio Price Calculator</h1>
-        <p className="text-muted-foreground mt-2">
+    <div className="container py-4 sm:py-6 md:py-8 px-4 sm:px-6 max-w-7xl mx-auto">
+      <div className="text-center mb-4 sm:mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Studio Price Calculator</h1>
+        <p className="text-muted-foreground mt-2 text-sm sm:text-base">
           Estimate project costs and timelines based on scope and team composition
         </p>
       </div>
       
       {/* Top Controls Section */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center space-x-2">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 sm:mb-6 md:mb-8">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             className="flex items-center gap-2"
@@ -428,16 +428,16 @@ const Calculator: React.FC = () => {
         </Button>
       </div>
       
-      <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 ${showOnlyResults ? 'max-w-3xl mx-auto' : ''}`}>
+      <div className={`grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 ${showOnlyResults ? 'max-w-3xl mx-auto' : ''}`}>
         {/* Calculator Section */}
         {!showOnlyResults && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Team Composition</CardTitle>
-                <CardDescription>Set hourly rates and weekly hours for each role</CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Team Composition</CardTitle>
+                <CardDescription className="text-sm">Set hourly rates and weekly hours for each role</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 {roles.map((role) => (
                   <RoleInput 
                     key={role.id} 
@@ -450,18 +450,18 @@ const Calculator: React.FC = () => {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Project Scope</CardTitle>
-                <CardDescription>Select the type of project you're planning</CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Project Scope</CardTitle>
+                <CardDescription className="text-sm">Select the type of project you're planning</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <ScopeSelector 
                   selectedScope={selectedScope} 
                   onChange={handleScopeChange}
                 />
                 
                 {timeline.baseWeeks > 0 && (
-                  <div className="mt-6">
+                  <div className="mt-4 sm:mt-6">
                     <TimelineSlider 
                       baseWeeks={timeline.baseWeeks}
                       timeline={timeline}
@@ -473,11 +473,11 @@ const Calculator: React.FC = () => {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>User Load</CardTitle>
-                <CardDescription>Estimate your expected user count</CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">User Load</CardTitle>
+                <CardDescription className="text-sm">Estimate your expected user count</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <UserSlider 
                   userCount={userCount} 
                   onChange={handleUserCountChange} 
@@ -486,11 +486,11 @@ const Calculator: React.FC = () => {
             </Card>
             
             <Card>
-              <CardHeader>
-                <CardTitle>Infrastructure Options</CardTitle>
-                <CardDescription>Configure additional services and free tier eligibility</CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Infrastructure Options</CardTitle>
+                <CardDescription className="text-sm">Configure additional services and free tier eligibility</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Storage Cost Input */}
                 <div>
                   <StorageCostInput 
@@ -513,7 +513,7 @@ const Calculator: React.FC = () => {
                 <Separator />
                 
                 {/* Free Tier Toggles for standard services */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <FreeTierToggle 
                       id="hosting-free-tier"
@@ -579,12 +579,10 @@ const Calculator: React.FC = () => {
                   </div>
                 </div>
 
-
                 {/* Global Free Tier Toggle */}
                 <div>
-                  <div className="flex justify-between items-center">
-                    {/* <h3 className="font-medium">Global Free Tier Control</h3> */}
-                    <div className="flex gap-2">
+                  <div className="flex flex-wrap justify-between items-center gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button 
                         size="sm" 
                         variant="outline"
@@ -607,11 +605,11 @@ const Calculator: React.FC = () => {
             
             {/* Retainer Estimator Card */}
             <Card>
-              <CardHeader>
-                <CardTitle>Ongoing Support Retainer</CardTitle>
-                <CardDescription>Estimate monthly support and maintenance costs</CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Ongoing Support Retainer</CardTitle>
+                <CardDescription className="text-sm">Estimate monthly support and maintenance costs</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <RetainerEstimator
                   roles={roles}
                   retainerHours={retainerHours}
@@ -625,15 +623,15 @@ const Calculator: React.FC = () => {
         {/* Results Section */}
         <div className={showOnlyResults ? "col-span-2" : ""}>
           <Card>
-            <CardHeader>
+            <CardHeader className="p-4 sm:p-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle>Project Cost Breakdown</CardTitle>
-                  <CardDescription>View detailed cost analysis</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Project Cost Breakdown</CardTitle>
+                  <CardDescription className="text-sm">View detailed cost analysis</CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <CostBreakdown 
                 roles={roles}
                 selectedScope={selectedScope}
