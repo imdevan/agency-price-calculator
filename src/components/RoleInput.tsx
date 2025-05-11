@@ -63,9 +63,9 @@ const RoleInput: React.FC<RoleInputProps> = ({ role, onChange, totalProjectHours
             min={0}
             className="h-9"
           />
-          {totalProjectHours !== undefined && totalProjectHours > 0 && (
+          {(
             <div className="text-xs text-muted-foreground">
-              Total: {totalProjectHours} hours over project timeline
+              Total: {totalProjectHours ?? 0} {totalProjectHours && totalProjectHours > 0 ? "hours over project timeline" : ""}
             </div>
           )}
         </div>
