@@ -62,7 +62,7 @@ const Calculator: React.FC = () => {
   });
   
   // Retainer state
-  const [retainerHours, setRetainerHours] = useState<number>(20);
+  const [retainerHours, setRetainerHours] = useState<number>(17);
 
   // Timeline state
   const [timeline, setTimeline] = useState<TimelineAdjustment>({
