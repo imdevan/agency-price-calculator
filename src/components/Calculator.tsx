@@ -494,7 +494,7 @@ const Calculator: React.FC = () => {
                   <div>
                     <FreeTierToggle 
                       id="hosting-free-tier"
-                      label="Hosting free tier"
+                      label="Hosting"
                       isEnabled={freeTierEligibility.hosting}
                       onChange={(value) => handleToggleFreeTier('hosting', value)}
                       cost={infrastructureCosts.hosting}
@@ -503,7 +503,7 @@ const Calculator: React.FC = () => {
                   <div>
                     <FreeTierToggle 
                       id="database-free-tier"
-                      label="Database free tier"
+                      label="Database"
                       isEnabled={freeTierEligibility.database}
                       onChange={(value) => handleToggleFreeTier('database', value)}
                       cost={infrastructureCosts.database}
@@ -512,7 +512,7 @@ const Calculator: React.FC = () => {
                   <div>
                     <FreeTierToggle 
                       id="cdn-free-tier"
-                      label="CDN free tier"
+                      label="CDN"
                       isEnabled={freeTierEligibility.cdn}
                       onChange={(value) => handleToggleFreeTier('cdn', value)}
                       cost={infrastructureCosts.cdn}
@@ -521,7 +521,7 @@ const Calculator: React.FC = () => {
                   <div>
                     <FreeTierToggle 
                       id="cicd-free-tier"
-                      label="CI/CD free tier"
+                      label="CI/CD"
                       isEnabled={freeTierEligibility.cicd}
                       onChange={(value) => handleToggleFreeTier('cicd', value)}
                       cost={infrastructureCosts.cicd}
@@ -530,7 +530,7 @@ const Calculator: React.FC = () => {
                   <div>
                     <FreeTierToggle 
                       id="authentication-free-tier"
-                      label="Authentication free tier"
+                      label="Authentication "
                       isEnabled={freeTierEligibility.authentication}
                       onChange={(value) => handleToggleFreeTier('authentication', value)}
                       cost={infrastructureCosts.authentication}
@@ -539,7 +539,7 @@ const Calculator: React.FC = () => {
                   <div>
                     <FreeTierToggle 
                       id="other-free-tier"
-                      label="Other services free tier"
+                      label="Other services "
                       isEnabled={freeTierEligibility.otherServices}
                       onChange={(value) => handleToggleFreeTier('otherServices', value)}
                       cost={infrastructureCosts.otherServices}

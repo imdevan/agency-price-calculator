@@ -23,6 +23,9 @@ const FreeTierToggle: React.FC<FreeTierToggleProps> = ({ id, label, isEnabled, o
 
   return (
     <div className="space-y-1">
+      <p>
+        {label}
+      </p>
       {cost !== undefined && (
         <p className="text-xs text-muted-foreground">
           {isEnabled ? 'Free' : formatCurrency(cost)}/mo
