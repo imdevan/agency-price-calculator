@@ -107,7 +107,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
               </tr>
             </thead>
             <tbody>
-              {weeklyRoleCosts.map((role) => (
+              {weeklyRoleCosts.map((role) => role.weeklyHours > 0 && (
                 <tr key={role.id} className="border-b border-gray-100">
                   <td className="py-2">{role.title}</td>
                   <td className="text-right py-2">{role.weeklyHours}</td>
