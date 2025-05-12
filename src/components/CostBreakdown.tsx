@@ -15,6 +15,7 @@ interface CostBreakdownProps {
   retainerHours?: number;
   showRetainer?: boolean;
   showInfrastructure?: boolean;
+  otherServices?: Array<{ id: string; name: string; cost: number; description?: string }>;
 }
 
 const CostBreakdown: React.FC<CostBreakdownProps> = ({
@@ -27,6 +28,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   retainerHours = 0,
   showRetainer = true,
   showInfrastructure = true,
+  otherServices = []
 }) => {
   // Calculate weekly costs based on hourly rate and weekly hours
   const weeklyRoleCosts = roles.map(role => {
@@ -111,6 +113,10 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   };
 
   const formattedTimelineText = formatTimeline(timeline.adjustedWeeks);
+
+  // Determine if we should show the Total Cost Breakdown section
+  // Hide if both infrastructure and retainer are disabled
+  const showTotalCostBreakdown = showInfrastructure || (showRetainer && retainerHours > 0);
 
   return (
     <div className="space-y-6">
@@ -290,16 +296,32 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
                       formatCurrency(infrastructureCosts.authentication)}
                   </td>
                 </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-2">
-                    <div>Other Services</div>
-                  </td>
-                  <td className="text-right py-2">
-                    {freeTierEligibility.otherServices ? 
-                      <span className="text-green-600">Free Tier</span> : 
-                      formatCurrency(infrastructureCosts.otherServices)}
-                  </td>
-                </tr>
+                
+                {/* Display each other service as a separate line item */}
+                {otherServices && otherServices.length > 0 && otherServices.map(service => (
+                  <tr key={service.id} className="border-b border-gray-100">
+                    <td className="py-2">
+                      <div>{service.name}</div>
+                      {service.description && (
+                        <div className="text-xs text-muted-foreground">{service.description}</div>
+                      )}
+                    </td>
+                    <td className="text-right py-2">
+                      {freeTierEligibility.otherServices ? 
+                        <span className="text-green-600">Free Tier</span> : 
+                        formatCurrency(service.cost)}
+                    </td>
+                  </tr>
+                ))}
+                
+                {/* Display a sum line for other services only if there are any */}
+                {otherServices && otherServices.length > 0 && !freeTierEligibility.otherServices && (
+                  <tr className="font-medium border-t border-gray-300">
+                    <td className="pt-2">Other Services Total:</td>
+                    <td className="text-right pt-2">{formatCurrency(infrastructureCosts.otherServices)}</td>
+                  </tr>
+                )}
+                
                 <tr className="font-medium">
                   <td className="text-right pt-2">Total Monthly:</td>
                   <td className="text-right pt-2">{formatCurrency(monthlyInfrastructureCost)}</td>
@@ -314,56 +336,58 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
         </Card>
       )}
 
-      {/* Total Cost Breakdown */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Total Cost Breakdown</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-2">
-            <div className="flex justify-between text-base">
-              <span>Project Scope:</span>
-              <span className="font-semibold">{PROJECT_SCOPES[selectedScope].label}</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Weekly Development Cost:</span>
-              <span className="font-semibold">{formatCurrency(totalWeeklyCost)}</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Monthly Development Cost:</span>
-              <span className="font-semibold">{formatCurrency(monthlyDevelopmentCost)}</span>
-            </div>
-            {showInfrastructure && (
+      {/* Total Cost Breakdown - conditionally display */}
+      {showTotalCostBreakdown && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Total Cost Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2">
               <div className="flex justify-between text-base">
-                <span>Monthly Infrastructure Cost:</span>
-                <span className="font-semibold">{formatCurrency(monthlyInfrastructureCost)}</span>
+                <span>Project Scope:</span>
+                <span className="font-semibold">{PROJECT_SCOPES[selectedScope].label}</span>
               </div>
-            )}
-            {showRetainer && retainerHours > 0 && (
               <div className="flex justify-between text-base">
-                <span>Monthly Retainer Cost:</span>
-                <span className="font-semibold">{formatCurrency(monthlyRetainerCost)}</span>
+                <span>Weekly Development Cost:</span>
+                <span className="font-semibold">{formatCurrency(totalWeeklyCost)}</span>
               </div>
-            )}
-            <div className="flex justify-between text-base">
-              <span>Monthly Total Cost:</span>
-              <span className="font-semibold">{formatCurrency(monthlyTotalCost)}</span>
+              <div className="flex justify-between text-base">
+                <span>Monthly Development Cost:</span>
+                <span className="font-semibold">{formatCurrency(monthlyDevelopmentCost)}</span>
+              </div>
+              {showInfrastructure && (
+                <div className="flex justify-between text-base">
+                  <span>Monthly Infrastructure Cost:</span>
+                  <span className="font-semibold">{formatCurrency(monthlyInfrastructureCost)}</span>
+                </div>
+              )}
+              {showRetainer && retainerHours > 0 && (
+                <div className="flex justify-between text-base">
+                  <span>Monthly Retainer Cost:</span>
+                  <span className="font-semibold">{formatCurrency(monthlyRetainerCost)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-base">
+                <span>Monthly Total Cost:</span>
+                <span className="font-semibold">{formatCurrency(monthlyTotalCost)}</span>
+              </div>
+              <div className="flex justify-between text-base">
+                <span>Yearly Total Cost:</span>
+                <span className="font-semibold">{formatCurrency(yearlyTotalCost)}</span>
+              </div>
+              <div className="flex justify-between text-base">
+                <span>Estimated Timeline:</span>
+                <span className="font-semibold">{formattedTimelineText}</span>
+              </div>
+              <div className="flex justify-between text-base">
+                <span>Estimated Development Cost:</span>
+                <span className="font-semibold">{formatCurrency(totalDevelopmentCost)}</span>
+              </div>
             </div>
-            <div className="flex justify-between text-base">
-              <span>Yearly Total Cost:</span>
-              <span className="font-semibold">{formatCurrency(yearlyTotalCost)}</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Estimated Timeline:</span>
-              <span className="font-semibold">{formattedTimelineText}</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Estimated Development Cost:</span>
-              <span className="font-semibold">{formatCurrency(totalDevelopmentCost)}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
 
       {showRetainer && retainerHours > 0 && (

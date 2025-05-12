@@ -21,7 +21,7 @@ const SectionToggle: React.FC<SectionToggleProps> = ({
   return (
     <div className="flex items-center justify-between">
       <div>
-        <Label htmlFor={id} className="text-base">{label}</Label>
+        {label && <Label htmlFor={id} className="text-base">{label}</Label>}
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
@@ -30,6 +30,7 @@ const SectionToggle: React.FC<SectionToggleProps> = ({
         id={id}
         checked={isEnabled}
         onCheckedChange={onChange}
+        className="data-[state=checked]:bg-green-600" // Match the green highlight color used for free tier labels
       />
     </div>
   );

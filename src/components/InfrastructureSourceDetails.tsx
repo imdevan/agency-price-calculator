@@ -3,20 +3,22 @@ import React, { useState } from 'react';
 import { Scope, InfrastructureSourceCosts } from '@/types';
 import { INFRASTRUCTURE_SOURCE_COSTS } from '@/data';
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check } from 'lucide-react';
 
 interface InfrastructureSourceDetailsProps {
   selectedScope: Scope;
   serviceType: 'hosting' | 'database' | 'cdn' | 'cicd' | 'storage' | 'authentication';
   serviceName: string;
   isFreeTier?: boolean;
+  selectedProvider?: string;
 }
 
 const InfrastructureSourceDetails: React.FC<InfrastructureSourceDetailsProps> = ({
   selectedScope,
   serviceType,
   serviceName,
-  isFreeTier = false
+  isFreeTier = false,
+  selectedProvider = ''
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const sourceCosts = INFRASTRUCTURE_SOURCE_COSTS[selectedScope][serviceType];
@@ -49,9 +51,20 @@ const InfrastructureSourceDetails: React.FC<InfrastructureSourceDetailsProps> = 
             <div className="text-green-600 text-sm pb-2">Using free tier</div>
           ) : null}
           {sourceCosts.map((source, index) => (
-            <div key={index} className="border-b border-border/30 pb-2 last:border-0 last:pb-0">
-              <div className="flex justify-between">
-                <span className="font-medium">{source.serviceName}</span>
+            <div 
+              key={index} 
+              className={`border-b border-border/30 pb-2 last:border-0 last:pb-0 ${selectedProvider === source.serviceName ? 'bg-primary/5 p-2 -mx-2 rounded' : ''}`}
+            >
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">{source.serviceName}</span>
+                  {selectedProvider === source.serviceName && (
+                    <span className="text-green-600 flex items-center">
+                      <Check size={14} className="ml-1" />
+                      <span className="text-xs ml-1">(selected)</span>
+                    </span>
+                  )}
+                </div>
                 <span>{formatCurrency(source.baseCost)}/mo</span>
               </div>
               <p className="text-xs text-muted-foreground">{source.description}</p>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -279,14 +278,8 @@ const Calculator: React.FC = () => {
     selectedScope, 
     userCount, 
     gbStorage, 
-    freeTierEligibility, 
-    roles, 
-    timeline, 
-    otherServices,
-    showOnlyResults,
-    retainerHours,
-    showRetainer,
-    showInfrastructure,
+    otherServices, 
+    freeTierEligibility,
     serviceProviders
   ]);
 
@@ -611,14 +604,15 @@ const Calculator: React.FC = () => {
                   />
                 </div>
               </CardHeader>
-              <CardContent className="py-3 px-4 sm:px-6 space-y-4 sm:space-y-6">
-                {/* Storage Cost Input */}
+              <CardContent className={`py-3 px-4 sm:px-6 space-y-4 sm:space-y-6 ${!showInfrastructure ? 'opacity-50 pointer-events-none' : ''}`}>
+                {/* Storage Cost Input - Keep the "Using free tier" label always visible */}
                 <div>
                   <StorageCostInput 
                     gbStored={gbStorage}
                     onChange={setGbStorage}
                     cost={infrastructureCosts.storage}
                     isFreeTier={freeTierEligibility.storage}
+                    alwaysShowFreeTier={true}
                   />
                 </div>
                 
@@ -629,6 +623,7 @@ const Calculator: React.FC = () => {
                   services={otherServices}
                   onChange={handleOtherServicesChange}
                   totalCost={infrastructureCosts.otherServices}
+                  disabled={!showInfrastructure}
                 />
                 
                 <Separator />
@@ -640,6 +635,7 @@ const Calculator: React.FC = () => {
                       size="sm" 
                       variant="outline"
                       onClick={() => handleToggleAllFreeTiers(true)}
+                      disabled={!showInfrastructure}
                     >
                       Enable All Free Tiers
                     </Button>
@@ -647,6 +643,7 @@ const Calculator: React.FC = () => {
                       size="sm" 
                       variant="outline"
                       onClick={() => handleToggleAllFreeTiers(false)}
+                      disabled={!showInfrastructure}
                     >
                       Disable All Free Tiers
                     </Button>
@@ -662,6 +659,7 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.hosting}
                       onChange={(value) => handleToggleFreeTier('hosting', value)}
                       cost={infrastructureCosts.hosting}
+                      disabled={!showInfrastructure}
                     />
                     <ServiceProviderSelection 
                       serviceType="hosting"
@@ -670,6 +668,7 @@ const Calculator: React.FC = () => {
                       onSelect={(provider) => handleServiceProviderChange('hosting', provider)}
                       scope={selectedScope}
                       isFreeTier={freeTierEligibility.hosting}
+                      disabled={!showInfrastructure}
                     />
                   </div>
                   <div>
@@ -679,6 +678,7 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.database}
                       onChange={(value) => handleToggleFreeTier('database', value)}
                       cost={infrastructureCosts.database}
+                      disabled={!showInfrastructure}
                     />
                     <ServiceProviderSelection 
                       serviceType="database"
@@ -687,6 +687,7 @@ const Calculator: React.FC = () => {
                       onSelect={(provider) => handleServiceProviderChange('database', provider)}
                       scope={selectedScope}
                       isFreeTier={freeTierEligibility.database}
+                      disabled={!showInfrastructure}
                     />
                   </div>
                   <div>
@@ -696,6 +697,7 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.cdn}
                       onChange={(value) => handleToggleFreeTier('cdn', value)}
                       cost={infrastructureCosts.cdn}
+                      disabled={!showInfrastructure}
                     />
                     <ServiceProviderSelection 
                       serviceType="cdn"
@@ -704,6 +706,7 @@ const Calculator: React.FC = () => {
                       onSelect={(provider) => handleServiceProviderChange('cdn', provider)}
                       scope={selectedScope}
                       isFreeTier={freeTierEligibility.cdn}
+                      disabled={!showInfrastructure}
                     />
                   </div>
                   <div>
@@ -713,6 +716,7 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.cicd}
                       onChange={(value) => handleToggleFreeTier('cicd', value)}
                       cost={infrastructureCosts.cicd}
+                      disabled={!showInfrastructure}
                     />
                     <ServiceProviderSelection 
                       serviceType="cicd"
@@ -721,6 +725,7 @@ const Calculator: React.FC = () => {
                       onSelect={(provider) => handleServiceProviderChange('cicd', provider)}
                       scope={selectedScope}
                       isFreeTier={freeTierEligibility.cicd}
+                      disabled={!showInfrastructure}
                     />
                   </div>
                   <div>
@@ -730,6 +735,7 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.authentication}
                       onChange={(value) => handleToggleFreeTier('authentication', value)}
                       cost={infrastructureCosts.authentication}
+                      disabled={!showInfrastructure}
                     />
                     <ServiceProviderSelection 
                       serviceType="authentication"
@@ -738,6 +744,7 @@ const Calculator: React.FC = () => {
                       onSelect={(provider) => handleServiceProviderChange('authentication', provider)}
                       scope={selectedScope}
                       isFreeTier={freeTierEligibility.authentication}
+                      disabled={!showInfrastructure}
                     />
                   </div>
                   <div>
@@ -747,6 +754,7 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.storage}
                       onChange={(value) => handleToggleFreeTier('storage', value)}
                       cost={infrastructureCosts.storage}
+                      disabled={!showInfrastructure}
                     />
                     <ServiceProviderSelection 
                       serviceType="storage"
@@ -755,6 +763,7 @@ const Calculator: React.FC = () => {
                       onSelect={(provider) => handleServiceProviderChange('storage', provider)}
                       scope={selectedScope}
                       isFreeTier={freeTierEligibility.storage}
+                      disabled={!showInfrastructure}
                     />
                   </div>
                   <div>
@@ -764,6 +773,7 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.otherServices}
                       onChange={(value) => handleToggleFreeTier('otherServices', value)}
                       cost={infrastructureCosts.otherServices}
+                      disabled={!showInfrastructure}
                     />
                   </div>
                 </div>
@@ -820,6 +830,7 @@ const Calculator: React.FC = () => {
                 retainerHours={showRetainer ? retainerHours : 0}
                 showRetainer={showRetainer && retainerHours > 0}
                 showInfrastructure={showInfrastructure}
+                otherServices={otherServices}
               />
             </CardContent>
           </Card>
