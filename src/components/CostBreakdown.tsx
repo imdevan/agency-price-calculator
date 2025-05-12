@@ -179,44 +179,6 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
         </CardContent>
       </Card>
 
-      {showRetainer && retainerHours > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Retainer Costs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid gap-2">
-                <div className="flex justify-between text-base">
-                  <span>Weekly Support Hours:</span>
-                  <span className="font-semibold">{retainerHours} hours</span>
-                </div>
-                <div className="flex justify-between text-base">
-                  <span>Average Hourly Rate:</span>
-                  <span className="font-semibold">{formatCurrency(hourlyRate)}</span>
-                </div>
-                <div className="flex justify-between text-base">
-                  <span>Weekly Retainer Cost:</span>
-                  <span className="font-semibold">{formatCurrency(weeklyRetainerCost)}</span>
-                </div>
-                <div className="flex justify-between text-base">
-                  <span>Monthly Retainer Cost:</span>
-                  <span className="font-semibold">{formatCurrency(monthlyRetainerCost)}</span>
-                </div>
-                <div className="flex justify-between text-base">
-                  <span>Yearly Retainer Cost:</span>
-                  <span className="font-semibold">{formatCurrency(yearlyRetainerCost)}</span>
-                </div>
-              </div>
-              
-              <div className="text-sm text-muted-foreground mt-4">
-                <p>This retainer estimate is based on the average hourly rate of your selected team composition and includes regular maintenance, bug fixes, and minor feature enhancements.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {showInfrastructure && (
         <Card>
           <CardHeader className="pb-2">
@@ -352,7 +314,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
         </Card>
       )}
 
-      {/* Former Summary card moved to the bottom and renamed */}
+      {/* Total Cost Breakdown */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-xl">Total Cost Breakdown</CardTitle>
@@ -402,6 +364,45 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
           </div>
         </CardContent>
       </Card>
+
+
+      {showRetainer && retainerHours > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Retainer Costs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid gap-2">
+                <div className="flex justify-between text-base">
+                  <span>Weekly Support Hours:</span>
+                  <span className="font-semibold">{retainerHours} hours</span>
+                </div>
+                <div className="flex justify-between text-base">
+                  <span>Average Hourly Rate:</span>
+                  <span className="font-semibold">{formatCurrency(hourlyRate)}</span>
+                </div>
+                <div className="flex justify-between text-base">
+                  <span>Weekly Retainer Cost:</span>
+                  <span className="font-semibold">{formatCurrency(weeklyRetainerCost)}</span>
+                </div>
+                <div className="flex justify-between text-base">
+                  <span>Monthly Retainer Cost:</span>
+                  <span className="font-semibold">{formatCurrency(monthlyRetainerCost)}</span>
+                </div>
+                <div className="flex justify-between text-base">
+                  <span>Yearly Retainer Cost:</span>
+                  <span className="font-semibold">{formatCurrency(yearlyRetainerCost)}</span>
+                </div>
+              </div>
+              
+              <div className="text-sm text-muted-foreground mt-4">
+                <p>This retainer estimate is based on the average hourly rate of your selected team composition and includes regular maintenance, bug fixes, and minor feature enhancements.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
