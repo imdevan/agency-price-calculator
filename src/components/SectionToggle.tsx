@@ -30,7 +30,7 @@ const SectionToggle: React.FC<SectionToggleProps> = ({
         id={id}
         checked={isEnabled}
         onCheckedChange={onChange}
-        className="data-[state=checked]:bg-green-600" // Match the green highlight color used for free tier labels
+        className="data-[state=checked]:bg-primary" // Match the green highlight color used for free tier labels
       />
     </div>
   );
