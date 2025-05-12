@@ -32,7 +32,7 @@ const StorageCostInput: React.FC<StorageCostInputProps> = ({ gbStored, onChange,
     <div className="space-y-2">
       <div className="flex justify-between items-center">
         <Label htmlFor="storage-gb">Storage (GB)</Label>
-        <span className="font-semibold">{formatCurrency(cost)}/mo</span>
+        <span className="font-semibold">{isFreeTier ? "Free" : formatCurrency(cost)}/mo</span>
       </div>
       <div className="flex items-center space-x-2">
         <Input 
@@ -46,11 +46,9 @@ const StorageCostInput: React.FC<StorageCostInputProps> = ({ gbStored, onChange,
         />
         <span className="text-sm text-muted-foreground">GB</span>
       </div>
-      {isFreeTier && (
-        <p className="text-xs text-muted-foreground">
-          Using free tier ({STORAGE_COST_CALCULATOR.baseFreeGB}GB included)
-        </p>
-      )}
+      <p className="text-xs text-muted-foreground">
+        {isFreeTier ? "Using free tier" : `First ${STORAGE_COST_CALCULATOR.baseFreeGB}GB included`}
+      </p>
     </div>
   );
 };

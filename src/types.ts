@@ -1,4 +1,3 @@
-
 export type Role = {
   id: string;
   title: string;
@@ -53,9 +52,14 @@ export type FreeTierEligibility = {
   otherServices: boolean;
 };
 
+export interface ServiceProvider {
+  serviceName: string;
+  baseCost: number;
+  description: string;
+}
+
 export interface TimelineAdjustment {
   baseWeeks: number;
   adjustedWeeks: number;
   multiplier: number;
 }
-

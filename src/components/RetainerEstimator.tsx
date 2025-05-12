@@ -1,21 +1,23 @@
 
 import React from 'react';
+import { Role } from '@/types';
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Role } from '@/types';
 
 interface RetainerEstimatorProps {
   roles: Role[];
   retainerHours: number;
   onRetainerHoursChange: (hours: number) => void;
+  disabled?: boolean;
 }
 
 const RetainerEstimator: React.FC<RetainerEstimatorProps> = ({ 
   roles, 
-  retainerHours,
-  onRetainerHoursChange
+  retainerHours, 
+  onRetainerHoursChange,
+  disabled = false
 }) => {
-  // Calculate weighted average hourly rate based on role weekly hours
+  // Calculate weighted average hourly rate
   const calculateWeightedHourlyRate = () => {
     const totalHours = roles.reduce((sum, role) => sum + role.weeklyHours, 0);
     
@@ -34,7 +36,8 @@ const RetainerEstimator: React.FC<RetainerEstimatorProps> = ({
   };
   
   const hourlyRate = calculateWeightedHourlyRate();
-  const monthlyRetainerCost = hourlyRate * retainerHours * 4.33; // Average weeks per month
+  const weeklyRetainerCost = hourlyRate * retainerHours;
+  const monthlyRetainerCost = weeklyRetainerCost * 4.33; // Average weeks per month
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -45,51 +48,48 @@ const RetainerEstimator: React.FC<RetainerEstimatorProps> = ({
     }).format(amount);
   };
   
-  const handleSliderChange = (values: number[]) => {
-    if (values.length > 0) {
-      onRetainerHoursChange(values[0]);
+  const handleSliderChange = (value: number[]) => {
+    if (!disabled) {
+      onRetainerHoursChange(value[0]);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-sm text-muted-foreground mb-2">
-          Ongoing support retainers provide continued maintenance and improvements after the initial project is complete.
-        </p>
-      </div>
-      
-      <div className="space-y-4">
+    <div className={`space-y-4 ${disabled ? 'opacity-50' : ''}`}>
+      <div className="space-y-1">
         <div className="flex justify-between items-center">
           <Label htmlFor="retainer-hours">Weekly Support Hours</Label>
-          <span className="text-sm font-medium">{retainerHours} hours</span>
+          <span className="font-medium">{retainerHours} hours</span>
         </div>
-        <Slider 
+        <Slider
           id="retainer-hours"
-          min={0} 
-          max={40} 
-          step={1} 
-          value={[retainerHours]} 
-          onValueChange={handleSliderChange} 
+          min={0}
+          max={40}
+          step={1}
+          value={[retainerHours]}
+          onValueChange={handleSliderChange}
+          disabled={disabled}
+          className="py-4"
         />
-        <div className="text-xs text-muted-foreground">
-          Adjust the number of support hours needed per week
+      </div>
+      
+      <div className="space-y-2">
+        <div className="flex justify-between items-center text-sm">
+          <span>Average Hourly Rate:</span>
+          <span>{formatCurrency(hourlyRate)}/hour</span>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <span>Weekly Retainer Cost:</span>
+          <span>{formatCurrency(weeklyRetainerCost)}/week</span>
+        </div>
+        <div className="flex justify-between items-center font-semibold">
+          <span>Monthly Retainer Cost:</span>
+          <span>{formatCurrency(monthlyRetainerCost)}/month</span>
         </div>
       </div>
       
-      <div className="space-y-2 pt-4 border-t">
-        <div className="flex justify-between">
-          <span>Average Hourly Rate:</span>
-          <span className="font-medium">{formatCurrency(hourlyRate)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Weekly Retainer Cost:</span>
-          <span className="font-medium">{formatCurrency(hourlyRate * retainerHours)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium">Monthly Retainer Cost:</span>
-          <span className="font-medium">{formatCurrency(monthlyRetainerCost)}</span>
-        </div>
+      <div className="text-xs text-muted-foreground mt-2">
+        <p>Retainer cost is calculated based on your team's average hourly rate and includes ongoing maintenance, bug fixes, and minor feature improvements after the initial development phase.</p>
       </div>
     </div>
   );

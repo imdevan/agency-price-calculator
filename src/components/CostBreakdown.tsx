@@ -13,6 +13,8 @@ interface CostBreakdownProps {
   timeline: TimelineAdjustment;
   freeTierEligibility: FreeTierEligibility;
   retainerHours?: number;
+  showRetainer?: boolean;
+  showInfrastructure?: boolean;
 }
 
 const CostBreakdown: React.FC<CostBreakdownProps> = ({
@@ -23,6 +25,8 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   timeline,
   freeTierEligibility,
   retainerHours = 0,
+  showRetainer = true,
+  showInfrastructure = true,
 }) => {
   // Calculate weekly costs based on hourly rate and weekly hours
   const weeklyRoleCosts = roles.map(role => {
@@ -73,8 +77,13 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   const yearlyDevelopmentCost = timeline.adjustedWeeks < 52 ? totalDevelopmentCost : monthlyDevelopmentCost * 12;
   
   // Monthly and yearly totals (with retainer)
-  const monthlyTotalCost = monthlyDevelopmentCost + monthlyInfrastructureCost + (retainerHours > 0 ? monthlyRetainerCost : 0);
-  const yearlyTotalCost = yearlyDevelopmentCost + yearlyInfrastructureCost + (retainerHours > 0 ? yearlyRetainerCost : 0);
+  const monthlyTotalCost = monthlyDevelopmentCost + 
+    (showInfrastructure ? monthlyInfrastructureCost : 0) + 
+    ((showRetainer && retainerHours > 0) ? monthlyRetainerCost : 0);
+    
+  const yearlyTotalCost = yearlyDevelopmentCost + 
+    (showInfrastructure ? yearlyInfrastructureCost : 0) + 
+    ((showRetainer && retainerHours > 0) ? yearlyRetainerCost : 0);
   
   // Format timeline for display
   const formatTimeline = (weeks: number) => {
@@ -101,11 +110,14 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
     }).format(amount);
   };
 
+  const formattedTimelineText = formatTimeline(timeline.adjustedWeeks);
+
   return (
     <div className="space-y-6">
+      {/* New Summary Card at the top */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Summary</CardTitle>
+          <CardTitle className="text-xl">Project Summary</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-2">
@@ -114,34 +126,8 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
               <span className="font-semibold">{PROJECT_SCOPES[selectedScope].label}</span>
             </div>
             <div className="flex justify-between text-base">
-              <span>Weekly Development Cost:</span>
-              <span className="font-semibold">{formatCurrency(totalWeeklyCost)}</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Monthly Development Cost:</span>
-              <span className="font-semibold">{formatCurrency(monthlyDevelopmentCost)}</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Monthly Infrastructure Cost:</span>
-              <span className="font-semibold">{formatCurrency(monthlyInfrastructureCost)}</span>
-            </div>
-            {retainerHours > 0 && (
-              <div className="flex justify-between text-base">
-                <span>Monthly Retainer Cost:</span>
-                <span className="font-semibold">{formatCurrency(monthlyRetainerCost)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-base">
-              <span>Monthly Total Cost:</span>
-              <span className="font-semibold">{formatCurrency(monthlyTotalCost)}</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Yearly Total Cost:</span>
-              <span className="font-semibold">{formatCurrency(yearlyTotalCost)}</span>
-            </div>
-            <div className="flex justify-between text-base">
               <span>Estimated Timeline:</span>
-              <span className="font-semibold">{formatTimeline(timeline.adjustedWeeks)}</span>
+              <span className="font-semibold">{formattedTimelineText}</span>
             </div>
             <div className="flex justify-between text-base">
               <span>Estimated Development Cost:</span>
@@ -185,7 +171,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
                 <td className="text-right pt-2">{formatCurrency(monthlyDevelopmentCost)}</td>
               </tr>
               <tr className="font-medium">
-                <td colSpan={4} className="text-right pt-2">Total Development Cost (Timeline):</td>
+                <td colSpan={4} className="text-right pt-2">Total Development Cost ({formattedTimelineText}):</td>
                 <td className="text-right pt-2">{formatCurrency(totalDevelopmentCost)}</td>
               </tr>
             </tbody>
@@ -193,7 +179,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
         </CardContent>
       </Card>
 
-      {retainerHours > 0 && (
+      {showRetainer && retainerHours > 0 && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xl">Retainer Costs</CardTitle>
@@ -231,136 +217,189 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
         </Card>
       )}
 
+      {showInfrastructure && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Infrastructure Costs</CardTitle>
+            <p className="text-sm text-muted-foreground">Monthly costs based on {userCount.toLocaleString()} users</p>
+          </CardHeader>
+          <CardContent>
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left pb-2">Service</th>
+                  <th className="text-right pb-2">Monthly Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-100">
+                  <td className="py-2">
+                    <div>Hosting</div>
+                    <InfrastructureSourceDetails 
+                      selectedScope={selectedScope} 
+                      serviceType="hosting" 
+                      serviceName="Hosting"
+                      isFreeTier={freeTierEligibility.hosting} 
+                    />
+                  </td>
+                  <td className="text-right py-2">
+                    {freeTierEligibility.hosting ? 
+                      <span className="text-green-600">Free Tier</span> : 
+                      formatCurrency(infrastructureCosts.hosting)}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-2">
+                    <div>Database</div>
+                    <InfrastructureSourceDetails 
+                      selectedScope={selectedScope} 
+                      serviceType="database" 
+                      serviceName="Database" 
+                      isFreeTier={freeTierEligibility.database}
+                    />
+                  </td>
+                  <td className="text-right py-2">
+                    {freeTierEligibility.database ? 
+                      <span className="text-green-600">Free Tier</span> : 
+                      formatCurrency(infrastructureCosts.database)}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-2">
+                    <div>CDN</div>
+                    <InfrastructureSourceDetails 
+                      selectedScope={selectedScope} 
+                      serviceType="cdn" 
+                      serviceName="CDN" 
+                      isFreeTier={freeTierEligibility.cdn}
+                    />
+                  </td>
+                  <td className="text-right py-2">
+                    {freeTierEligibility.cdn ? 
+                      <span className="text-green-600">Free Tier</span> : 
+                      formatCurrency(infrastructureCosts.cdn)}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-2">
+                    <div>CI/CD</div>
+                    <InfrastructureSourceDetails 
+                      selectedScope={selectedScope} 
+                      serviceType="cicd" 
+                      serviceName="CI/CD" 
+                      isFreeTier={freeTierEligibility.cicd}
+                    />
+                  </td>
+                  <td className="text-right py-2">
+                    {freeTierEligibility.cicd ? 
+                      <span className="text-green-600">Free Tier</span> : 
+                      formatCurrency(infrastructureCosts.cicd)}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-2">
+                    <div>Storage</div>
+                    <InfrastructureSourceDetails 
+                      selectedScope={selectedScope} 
+                      serviceType="storage" 
+                      serviceName="Storage" 
+                      isFreeTier={freeTierEligibility.storage}
+                    />
+                  </td>
+                  <td className="text-right py-2">
+                    {freeTierEligibility.storage ? 
+                      <span className="text-green-600">Free Tier</span> : 
+                      formatCurrency(infrastructureCosts.storage)}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-2">
+                    <div>Authentication</div>
+                    <InfrastructureSourceDetails 
+                      selectedScope={selectedScope} 
+                      serviceType="authentication" 
+                      serviceName="Authentication" 
+                      isFreeTier={freeTierEligibility.authentication}
+                    />
+                  </td>
+                  <td className="text-right py-2">
+                    {freeTierEligibility.authentication ? 
+                      <span className="text-green-600">Free Tier</span> : 
+                      formatCurrency(infrastructureCosts.authentication)}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-2">
+                    <div>Other Services</div>
+                  </td>
+                  <td className="text-right py-2">
+                    {freeTierEligibility.otherServices ? 
+                      <span className="text-green-600">Free Tier</span> : 
+                      formatCurrency(infrastructureCosts.otherServices)}
+                  </td>
+                </tr>
+                <tr className="font-medium">
+                  <td className="text-right pt-2">Total Monthly:</td>
+                  <td className="text-right pt-2">{formatCurrency(monthlyInfrastructureCost)}</td>
+                </tr>
+                <tr className="font-medium">
+                  <td className="text-right pt-2">Total Yearly:</td>
+                  <td className="text-right pt-2">{formatCurrency(yearlyInfrastructureCost)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Former Summary card moved to the bottom and renamed */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Infrastructure Costs</CardTitle>
-          <p className="text-sm text-muted-foreground">Monthly costs based on {userCount.toLocaleString()} users</p>
+          <CardTitle className="text-xl">Total Cost Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left pb-2">Service</th>
-                <th className="text-right pb-2">Monthly Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-gray-100">
-                <td className="py-2">
-                  <div>Hosting</div>
-                  <InfrastructureSourceDetails 
-                    selectedScope={selectedScope} 
-                    serviceType="hosting" 
-                    serviceName="Hosting"
-                    isFreeTier={freeTierEligibility.hosting} 
-                  />
-                </td>
-                <td className="text-right py-2">
-                  {freeTierEligibility.hosting ? 
-                    <span className="text-green-600">Free Tier</span> : 
-                    formatCurrency(infrastructureCosts.hosting)}
-                </td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="py-2">
-                  <div>Database</div>
-                  <InfrastructureSourceDetails 
-                    selectedScope={selectedScope} 
-                    serviceType="database" 
-                    serviceName="Database" 
-                    isFreeTier={freeTierEligibility.database}
-                  />
-                </td>
-                <td className="text-right py-2">
-                  {freeTierEligibility.database ? 
-                    <span className="text-green-600">Free Tier</span> : 
-                    formatCurrency(infrastructureCosts.database)}
-                </td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="py-2">
-                  <div>CDN</div>
-                  <InfrastructureSourceDetails 
-                    selectedScope={selectedScope} 
-                    serviceType="cdn" 
-                    serviceName="CDN" 
-                    isFreeTier={freeTierEligibility.cdn}
-                  />
-                </td>
-                <td className="text-right py-2">
-                  {freeTierEligibility.cdn ? 
-                    <span className="text-green-600">Free Tier</span> : 
-                    formatCurrency(infrastructureCosts.cdn)}
-                </td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="py-2">
-                  <div>CI/CD</div>
-                  <InfrastructureSourceDetails 
-                    selectedScope={selectedScope} 
-                    serviceType="cicd" 
-                    serviceName="CI/CD" 
-                    isFreeTier={freeTierEligibility.cicd}
-                  />
-                </td>
-                <td className="text-right py-2">
-                  {freeTierEligibility.cicd ? 
-                    <span className="text-green-600">Free Tier</span> : 
-                    formatCurrency(infrastructureCosts.cicd)}
-                </td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="py-2">
-                  <div>Storage</div>
-                  <InfrastructureSourceDetails 
-                    selectedScope={selectedScope} 
-                    serviceType="storage" 
-                    serviceName="Storage" 
-                    isFreeTier={freeTierEligibility.storage}
-                  />
-                </td>
-                <td className="text-right py-2">
-                  {freeTierEligibility.storage ? 
-                    <span className="text-green-600">Free Tier</span> : 
-                    formatCurrency(infrastructureCosts.storage)}
-                </td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="py-2">
-                  <div>Authentication</div>
-                  <InfrastructureSourceDetails 
-                    selectedScope={selectedScope} 
-                    serviceType="authentication" 
-                    serviceName="Authentication" 
-                    isFreeTier={freeTierEligibility.authentication}
-                  />
-                </td>
-                <td className="text-right py-2">
-                  {freeTierEligibility.authentication ? 
-                    <span className="text-green-600">Free Tier</span> : 
-                    formatCurrency(infrastructureCosts.authentication)}
-                </td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="py-2">
-                  <div>Other Services</div>
-                </td>
-                <td className="text-right py-2">
-                  {freeTierEligibility.otherServices ? 
-                    <span className="text-green-600">Free Tier</span> : 
-                    formatCurrency(infrastructureCosts.otherServices)}
-                </td>
-              </tr>
-              <tr className="font-medium">
-                <td className="text-right pt-2">Total Monthly:</td>
-                <td className="text-right pt-2">{formatCurrency(monthlyInfrastructureCost)}</td>
-              </tr>
-              <tr className="font-medium">
-                <td className="text-right pt-2">Total Yearly:</td>
-                <td className="text-right pt-2">{formatCurrency(yearlyInfrastructureCost)}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="grid gap-2">
+            <div className="flex justify-between text-base">
+              <span>Project Scope:</span>
+              <span className="font-semibold">{PROJECT_SCOPES[selectedScope].label}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span>Weekly Development Cost:</span>
+              <span className="font-semibold">{formatCurrency(totalWeeklyCost)}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span>Monthly Development Cost:</span>
+              <span className="font-semibold">{formatCurrency(monthlyDevelopmentCost)}</span>
+            </div>
+            {showInfrastructure && (
+              <div className="flex justify-between text-base">
+                <span>Monthly Infrastructure Cost:</span>
+                <span className="font-semibold">{formatCurrency(monthlyInfrastructureCost)}</span>
+              </div>
+            )}
+            {showRetainer && retainerHours > 0 && (
+              <div className="flex justify-between text-base">
+                <span>Monthly Retainer Cost:</span>
+                <span className="font-semibold">{formatCurrency(monthlyRetainerCost)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-base">
+              <span>Monthly Total Cost:</span>
+              <span className="font-semibold">{formatCurrency(monthlyTotalCost)}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span>Yearly Total Cost:</span>
+              <span className="font-semibold">{formatCurrency(yearlyTotalCost)}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span>Estimated Timeline:</span>
+              <span className="font-semibold">{formattedTimelineText}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span>Estimated Development Cost:</span>
+              <span className="font-semibold">{formatCurrency(totalDevelopmentCost)}</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

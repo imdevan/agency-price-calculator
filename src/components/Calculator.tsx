@@ -1,15 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ToggleLeft, ToggleRight, Download, RefreshCw } from "lucide-react";
 import { Role, Scope, InfrastructureCost, TimelineAdjustment, FreeTierEligibility } from '@/types';
 import { 
   PROJECT_SCOPES, 
   BASE_INFRASTRUCTURE_COSTS, 
   USER_COST_MULTIPLIER,
   STORAGE_COST_CALCULATOR,
-  AUTHENTICATION_COST_CALCULATOR
+  AUTHENTICATION_COST_CALCULATOR,
+  INFRASTRUCTURE_SOURCE_COSTS
 } from '@/data';
 import RoleInput from './RoleInput';
 import ScopeSelector from './ScopeSelector';
@@ -23,12 +24,24 @@ import StorageCostInput from './StorageCostInput';
 import OtherServicesInput from './OtherServicesInput';
 import { useSearchParams, useNavigate } from "react-router-dom";
 import RetainerEstimator from './RetainerEstimator';
+import TopControls from './TopControls';
+import ServiceProviderSelection from './ServiceProviderSelection';
+import SectionToggle from './SectionToggle';
 
 interface OtherService {
   id: string;
   name: string;
   cost: number;
   description?: string;
+}
+
+interface ServiceProviders {
+  hosting: string;
+  database: string;
+  cdn: string;
+  cicd: string;
+  storage: string;
+  authentication: string;
 }
 
 const Calculator: React.FC = () => {
@@ -48,6 +61,21 @@ const Calculator: React.FC = () => {
   const [userCount, setUserCount] = useState<number>(500);
   const [gbStorage, setGbStorage] = useState<number>(10);
   const [otherServices, setOtherServices] = useState<OtherService[]>([]);
+  
+  // Section toggles
+  const [showRetainer, setShowRetainer] = useState<boolean>(true);
+  const [showInfrastructure, setShowInfrastructure] = useState<boolean>(true);
+  
+  // Service providers
+  const [serviceProviders, setServiceProviders] = useState<ServiceProviders>({
+    hosting: '',
+    database: '',
+    cdn: '',
+    cicd: '',
+    storage: '',
+    authentication: '',
+  });
+  
   const [infrastructureCosts, setInfrastructureCosts] = useState<InfrastructureCost>(
     BASE_INFRASTRUCTURE_COSTS.mvp
   );
@@ -70,6 +98,28 @@ const Calculator: React.FC = () => {
     adjustedWeeks: 0,
     multiplier: 1
   });
+
+  // Initialize service providers when scope changes
+  useEffect(() => {
+    const newServiceProviders: ServiceProviders = {
+      hosting: '',
+      database: '',
+      cdn: '',
+      cicd: '',
+      storage: '',
+      authentication: '',
+    };
+    
+    Object.keys(newServiceProviders).forEach(key => {
+      const serviceKey = key as keyof ServiceProviders;
+      const services = INFRASTRUCTURE_SOURCE_COSTS[selectedScope]?.[serviceKey];
+      if (services && services.length > 0) {
+        newServiceProviders[serviceKey] = services[0].serviceName;
+      }
+    });
+    
+    setServiceProviders(newServiceProviders);
+  }, [selectedScope]);
 
   // Load state from URL on initial render
   useEffect(() => {
@@ -152,6 +202,31 @@ const Calculator: React.FC = () => {
     if (resultsOnly === 'true') {
       setShowOnlyResults(true);
     }
+    
+    // Load section toggles
+    const retainerToggle = searchParams.get('showRetainer');
+    if (retainerToggle !== null) {
+      setShowRetainer(retainerToggle === 'true');
+    }
+    
+    const infraToggle = searchParams.get('showInfrastructure');
+    if (infraToggle !== null) {
+      setShowInfrastructure(infraToggle === 'true');
+    }
+    
+    // Load service providers
+    const providersParam = searchParams.get('providers');
+    if (providersParam) {
+      try {
+        const providersValues = JSON.parse(providersParam);
+        setServiceProviders(prev => ({
+          ...prev,
+          ...providersValues
+        }));
+      } catch (e) {
+        console.error("Failed to parse service providers from URL");
+      }
+    }
   }, []);
 
   // Update URL when state changes
@@ -192,6 +267,13 @@ const Calculator: React.FC = () => {
     // Add retainer hours
     params.set('retainerHours', retainerHours.toString());
     
+    // Add section toggles
+    params.set('showRetainer', showRetainer.toString());
+    params.set('showInfrastructure', showInfrastructure.toString());
+    
+    // Add service providers
+    params.set('providers', JSON.stringify(serviceProviders));
+    
     setSearchParams(params, { replace: true });
   }, [
     selectedScope, 
@@ -202,7 +284,10 @@ const Calculator: React.FC = () => {
     timeline, 
     otherServices,
     showOnlyResults,
-    retainerHours
+    retainerHours,
+    showRetainer,
+    showInfrastructure,
+    serviceProviders
   ]);
 
   // Calculate base timeline when scope or role hours change
@@ -222,14 +307,37 @@ const Calculator: React.FC = () => {
     });
   }, [selectedScope, roles]);
 
+  // Get base cost for a selected service provider
+  const getServiceProviderBaseCost = (serviceType: keyof ServiceProviders) => {
+    const providerName = serviceProviders[serviceType];
+    const providers = INFRASTRUCTURE_SOURCE_COSTS[selectedScope]?.[serviceType];
+    
+    if (providers && providerName) {
+      const provider = providers.find(p => p.serviceName === providerName);
+      return provider ? provider.baseCost : 0;
+    }
+    
+    return BASE_INFRASTRUCTURE_COSTS[selectedScope][serviceType];
+  };
+
   // Recalculate infrastructure costs when relevant parameters change
   useEffect(() => {
-    const baseCosts = BASE_INFRASTRUCTURE_COSTS[selectedScope];
+    const baseCosts = {
+      hosting: getServiceProviderBaseCost('hosting'),
+      database: getServiceProviderBaseCost('database'),
+      cdn: getServiceProviderBaseCost('cdn'),
+      cicd: getServiceProviderBaseCost('cicd'),
+      storage: getServiceProviderBaseCost('storage'),
+      authentication: getServiceProviderBaseCost('authentication'),
+      otherServices: 0
+    };
+    
     const userMultiplier = userCount / 1000;
     
     // Calculate storage cost based on GB and free tier
     let storageCost = baseCosts.storage;
     if (!freeTierEligibility.storage) {
+      // Always subtract the free tier amount when calculating storage costs
       const billableGB = Math.max(0, gbStorage - STORAGE_COST_CALCULATOR.baseFreeGB);
       storageCost = billableGB * STORAGE_COST_CALCULATOR.pricePerGBPerMonth;
       if (storageCost < baseCosts.storage) {
@@ -272,7 +380,8 @@ const Calculator: React.FC = () => {
     userCount, 
     gbStorage, 
     otherServices, 
-    freeTierEligibility
+    freeTierEligibility,
+    serviceProviders
   ]);
 
   const handleRoleChange = (id: string, field: 'hourlyRate' | 'weeklyHours', value: number) => {
@@ -325,6 +434,13 @@ const Calculator: React.FC = () => {
   const handleRetainerHoursChange = (hours: number) => {
     setRetainerHours(hours);
   };
+  
+  const handleServiceProviderChange = (serviceType: keyof ServiceProviders, providerName: string) => {
+    setServiceProviders(prev => ({
+      ...prev,
+      [serviceType]: providerName
+    }));
+  };
 
   const handleDownloadReport = () => {
     downloadCsv(
@@ -369,6 +485,28 @@ const Calculator: React.FC = () => {
       multiplier: 1
     });
     setShowOnlyResults(false);
+    setShowRetainer(true);
+    setShowInfrastructure(true);
+    
+    // Reset service providers
+    const newServiceProviders: ServiceProviders = {
+      hosting: '',
+      database: '',
+      cdn: '',
+      cicd: '',
+      storage: '',
+      authentication: '',
+    };
+    
+    Object.keys(newServiceProviders).forEach(key => {
+      const serviceKey = key as keyof ServiceProviders;
+      const services = INFRASTRUCTURE_SOURCE_COSTS['mvp']?.[serviceKey];
+      if (services && services.length > 0) {
+        newServiceProviders[serviceKey] = services[0].serviceName;
+      }
+    });
+    
+    setServiceProviders(newServiceProviders);
     
     // Clear URL params
     navigate('/', { replace: true });
@@ -392,52 +530,24 @@ const Calculator: React.FC = () => {
         </p>
       </div>
       
-      {/* Top Controls Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 sm:mb-6 md:mb-8">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={toggleResultsView}
-          >
-            {showOnlyResults ? (
-              <>
-                <ToggleLeft size={16} />
-                <span>Show All Inputs</span>
-              </>
-            ) : (
-              <>
-                <ToggleRight size={16} />
-                <span>Show Results Only</span>
-              </>
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={handleResetForm}
-          >
-            <RefreshCw size={16} />
-            <span>Reset Form</span>
-          </Button>
-        </div>
-        
-        <Button onClick={handleDownloadReport} className="flex items-center gap-2">
-          <Download size={16} />
-          <span>Download CSV</span>
-        </Button>
-      </div>
+      {/* Top Controls Section - Now using the new component */}
+      <TopControls 
+        showOnlyResults={showOnlyResults}
+        toggleResultsView={toggleResultsView}
+        handleResetForm={handleResetForm}
+        handleDownloadReport={handleDownloadReport}
+      />
       
       <div className={`grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 ${showOnlyResults ? 'max-w-3xl mx-auto' : ''}`}>
         {/* Calculator Section */}
         {!showOnlyResults && (
           <div className="space-y-4 sm:space-y-6">
             <Card>
-              <CardHeader className="p-4 sm:p-6">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-lg sm:text-xl">Team Composition</CardTitle>
                 <CardDescription className="text-sm">Set hourly rates and weekly hours for each role</CardDescription>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6">
+              <CardContent className="py-3 px-4 sm:px-6">
                 {roles.map((role) => (
                   <RoleInput 
                     key={role.id} 
@@ -450,11 +560,11 @@ const Calculator: React.FC = () => {
             </Card>
 
             <Card>
-              <CardHeader className="p-4 sm:p-6">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-lg sm:text-xl">Project Scope</CardTitle>
                 <CardDescription className="text-sm">Select the type of project you're planning</CardDescription>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6">
+              <CardContent className="py-3 px-4 sm:px-6">
                 <ScopeSelector 
                   selectedScope={selectedScope} 
                   onChange={handleScopeChange}
@@ -473,11 +583,11 @@ const Calculator: React.FC = () => {
             </Card>
 
             <Card>
-              <CardHeader className="p-4 sm:p-6">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-lg sm:text-xl">User Load</CardTitle>
                 <CardDescription className="text-sm">Estimate your expected user count</CardDescription>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6">
+              <CardContent className="py-3 px-4 sm:px-6">
                 <UserSlider 
                   userCount={userCount} 
                   onChange={handleUserCountChange} 
@@ -485,12 +595,23 @@ const Calculator: React.FC = () => {
               </CardContent>
             </Card>
             
+            {/* Infrastructure Options Card with Toggle */}
             <Card>
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl">Infrastructure Options</CardTitle>
-                <CardDescription className="text-sm">Configure additional services and free tier eligibility</CardDescription>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-lg sm:text-xl">Infrastructure Options</CardTitle>
+                    <CardDescription className="text-sm">Configure additional services and free tier eligibility</CardDescription>
+                  </div>
+                  <SectionToggle
+                    id="infrastructure-toggle"
+                    label=""
+                    isEnabled={showInfrastructure}
+                    onChange={setShowInfrastructure}
+                  />
+                </div>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <CardContent className="py-3 px-4 sm:px-6 space-y-4 sm:space-y-6">
                 {/* Storage Cost Input */}
                 <div>
                   <StorageCostInput 
@@ -512,6 +633,26 @@ const Calculator: React.FC = () => {
                 
                 <Separator />
                 
+                {/* Global Free Tier Toggle at the top */}
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleToggleAllFreeTiers(true)}
+                    >
+                      Enable All Free Tiers
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleToggleAllFreeTiers(false)}
+                    >
+                      Disable All Free Tiers
+                    </Button>
+                  </div>
+                </div>
+                
                 {/* Free Tier Toggles for standard services */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
@@ -522,6 +663,14 @@ const Calculator: React.FC = () => {
                       onChange={(value) => handleToggleFreeTier('hosting', value)}
                       cost={infrastructureCosts.hosting}
                     />
+                    <ServiceProviderSelection 
+                      serviceType="hosting"
+                      serviceName="Hosting"
+                      selectedProvider={serviceProviders.hosting}
+                      onSelect={(provider) => handleServiceProviderChange('hosting', provider)}
+                      scope={selectedScope}
+                      isFreeTier={freeTierEligibility.hosting}
+                    />
                   </div>
                   <div>
                     <FreeTierToggle 
@@ -530,6 +679,14 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.database}
                       onChange={(value) => handleToggleFreeTier('database', value)}
                       cost={infrastructureCosts.database}
+                    />
+                    <ServiceProviderSelection 
+                      serviceType="database"
+                      serviceName="Database"
+                      selectedProvider={serviceProviders.database}
+                      onSelect={(provider) => handleServiceProviderChange('database', provider)}
+                      scope={selectedScope}
+                      isFreeTier={freeTierEligibility.database}
                     />
                   </div>
                   <div>
@@ -540,6 +697,14 @@ const Calculator: React.FC = () => {
                       onChange={(value) => handleToggleFreeTier('cdn', value)}
                       cost={infrastructureCosts.cdn}
                     />
+                    <ServiceProviderSelection 
+                      serviceType="cdn"
+                      serviceName="CDN"
+                      selectedProvider={serviceProviders.cdn}
+                      onSelect={(provider) => handleServiceProviderChange('cdn', provider)}
+                      scope={selectedScope}
+                      isFreeTier={freeTierEligibility.cdn}
+                    />
                   </div>
                   <div>
                     <FreeTierToggle 
@@ -548,6 +713,14 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.cicd}
                       onChange={(value) => handleToggleFreeTier('cicd', value)}
                       cost={infrastructureCosts.cicd}
+                    />
+                    <ServiceProviderSelection 
+                      serviceType="cicd"
+                      serviceName="CI/CD"
+                      selectedProvider={serviceProviders.cicd}
+                      onSelect={(provider) => handleServiceProviderChange('cicd', provider)}
+                      scope={selectedScope}
+                      isFreeTier={freeTierEligibility.cicd}
                     />
                   </div>
                   <div>
@@ -558,6 +731,14 @@ const Calculator: React.FC = () => {
                       onChange={(value) => handleToggleFreeTier('authentication', value)}
                       cost={infrastructureCosts.authentication}
                     />
+                    <ServiceProviderSelection 
+                      serviceType="authentication"
+                      serviceName="Authentication"
+                      selectedProvider={serviceProviders.authentication}
+                      onSelect={(provider) => handleServiceProviderChange('authentication', provider)}
+                      scope={selectedScope}
+                      isFreeTier={freeTierEligibility.authentication}
+                    />
                   </div>
                   <div>
                     <FreeTierToggle 
@@ -566,6 +747,14 @@ const Calculator: React.FC = () => {
                       isEnabled={freeTierEligibility.storage}
                       onChange={(value) => handleToggleFreeTier('storage', value)}
                       cost={infrastructureCosts.storage}
+                    />
+                    <ServiceProviderSelection 
+                      serviceType="storage"
+                      serviceName="Storage"
+                      selectedProvider={serviceProviders.storage}
+                      onSelect={(provider) => handleServiceProviderChange('storage', provider)}
+                      scope={selectedScope}
+                      isFreeTier={freeTierEligibility.storage}
                     />
                   </div>
                   <div>
@@ -578,42 +767,31 @@ const Calculator: React.FC = () => {
                     />
                   </div>
                 </div>
-
-                {/* Global Free Tier Toggle */}
-                <div>
-                  <div className="flex flex-wrap justify-between items-center gap-2">
-                    <div className="flex flex-wrap gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleToggleAllFreeTiers(true)}
-                      >
-                        Enable All
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleToggleAllFreeTiers(false)}
-                      >
-                        Disable All
-                      </Button>
-                    </div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
             
-            {/* Retainer Estimator Card */}
+            {/* Retainer Estimator Card with Toggle */}
             <Card>
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl">Ongoing Support Retainer</CardTitle>
-                <CardDescription className="text-sm">Estimate monthly support and maintenance costs</CardDescription>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-lg sm:text-xl">Ongoing Support Retainer</CardTitle>
+                    <CardDescription className="text-sm">Estimate monthly support and maintenance costs</CardDescription>
+                  </div>
+                  <SectionToggle
+                    id="retainer-toggle"
+                    label=""
+                    isEnabled={showRetainer}
+                    onChange={setShowRetainer}
+                  />
+                </div>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6">
+              <CardContent className="py-3 px-4 sm:px-6">
                 <RetainerEstimator
                   roles={roles}
                   retainerHours={retainerHours}
                   onRetainerHoursChange={handleRetainerHoursChange}
+                  disabled={!showRetainer}
                 />
               </CardContent>
             </Card>
@@ -623,7 +801,7 @@ const Calculator: React.FC = () => {
         {/* Results Section */}
         <div className={showOnlyResults ? "col-span-2" : ""}>
           <Card>
-            <CardHeader className="p-4 sm:p-6">
+            <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle className="text-lg sm:text-xl">Project Cost Breakdown</CardTitle>
@@ -631,7 +809,7 @@ const Calculator: React.FC = () => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="py-3 px-4 sm:px-6">
               <CostBreakdown 
                 roles={roles}
                 selectedScope={selectedScope}
@@ -639,7 +817,9 @@ const Calculator: React.FC = () => {
                 userCount={userCount}
                 timeline={timeline}
                 freeTierEligibility={freeTierEligibility}
-                retainerHours={retainerHours}
+                retainerHours={showRetainer ? retainerHours : 0}
+                showRetainer={showRetainer && retainerHours > 0}
+                showInfrastructure={showInfrastructure}
               />
             </CardContent>
           </Card>
