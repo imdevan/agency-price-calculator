@@ -102,6 +102,12 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
     }
   };
   
+
+  // Format timeline in weeks
+  const formatTimelineInWeeks = (weeks: number) => {
+    return `${weeks} week${weeks > 1 ? 's' : ''}`;
+  };
+
   const formatCurrency = (amount: number | string) => {
     if (typeof amount === 'string') return amount;
     return new Intl.NumberFormat('en-US', {
@@ -113,6 +119,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   };
 
   const formattedTimelineText = formatTimeline(timeline.adjustedWeeks);
+  const formattedTimelineInWeeks = formatTimelineInWeeks(timeline.adjustedWeeks);
 
   // Determine if we should show the Total Cost Breakdown section
   // Hide if both infrastructure and retainer are disabled
@@ -177,7 +184,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
                 <td className="text-right pt-2">{formatCurrency(monthlyDevelopmentCost)}</td>
               </tr>
               <tr className="font-medium">
-                <td colSpan={4} className="text-right pt-2">Total Development Cost ({formattedTimelineText}):</td>
+                <td colSpan={4} className="text-right pt-2">Total Development Cost ({formattedTimelineInWeeks}):</td>
                 <td className="text-right pt-2">{formatCurrency(totalDevelopmentCost)}</td>
               </tr>
             </tbody>
