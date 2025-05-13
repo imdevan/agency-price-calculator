@@ -1,4 +1,3 @@
-
 import { ProjectScope, InfrastructureCost, InfrastructureSourceCosts } from './types';
 
 export const DEFAULT_ROLES = [
@@ -80,7 +79,8 @@ export const INFRASTRUCTURE_SOURCE_COSTS: Record<string, InfrastructureSourceCos
     hosting: [
       { serviceName: "Vercel Basic", baseCost: 10, description: "Basic hosting plan for small projects" },
       { serviceName: "AWS Free Tier", baseCost: 5, description: "Limited AWS services within free tier allowance" },
-      { serviceName: "Netlify Starter", baseCost: 5, description: "Static site hosting with limited build minutes" }
+      { serviceName: "Netlify Starter", baseCost: 5, description: "Static site hosting with limited build minutes" },
+      { serviceName: "Fly.io Starter", baseCost: 5, description: "Small VM instance with global edge deployment" }
     ],
     database: [
       { serviceName: "MongoDB Atlas Free", baseCost: 5, description: "Shared cluster with limited storage" },
@@ -109,7 +109,8 @@ export const INFRASTRUCTURE_SOURCE_COSTS: Record<string, InfrastructureSourceCos
     hosting: [
       { serviceName: "Vercel Pro", baseCost: 20, description: "Production-grade hosting with team collaboration" },
       { serviceName: "AWS Elastic Beanstalk Small", baseCost: 15, description: "Small instance hosting with auto-scaling" },
-      { serviceName: "Digital Ocean App Platform", baseCost: 15, description: "Basic container-based application hosting" }
+      { serviceName: "Digital Ocean App Platform", baseCost: 15, description: "Basic container-based application hosting" },
+      { serviceName: "Fly.io Standard", baseCost: 15, description: "Multiple VM instances with autoscaling" }
     ],
     database: [
       { serviceName: "MongoDB Atlas Shared", baseCost: 15, description: "Dedicated shared cluster with backups" },
@@ -139,7 +140,8 @@ export const INFRASTRUCTURE_SOURCE_COSTS: Record<string, InfrastructureSourceCos
     hosting: [
       { serviceName: "Vercel Enterprise", baseCost: 50, description: "Enterprise-grade hosting with SLA guarantees" },
       { serviceName: "AWS ECS Cluster", baseCost: 60, description: "Container-based hosting with load balancing" },
-      { serviceName: "Azure App Service Premium", baseCost: 40, description: "Premium hosting with auto-scaling" }
+      { serviceName: "Azure App Service Premium", baseCost: 40, description: "Premium hosting with auto-scaling" },
+      { serviceName: "Fly.io Enterprise", baseCost: 45, description: "Global VM cluster with advanced networking" }
     ],
     database: [
       { serviceName: "MongoDB Atlas Dedicated", baseCost: 45, description: "Dedicated cluster with high availability" },
@@ -197,4 +199,3 @@ export const AUTHENTICATION_COST_CALCULATOR = {
   freeMAUs: 7000,         // Average free MAUs across services
   pricePerMAUBeyondFree: 0.0015, // Average price per MAU beyond free tier
 };
-
