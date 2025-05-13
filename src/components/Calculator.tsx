@@ -492,7 +492,6 @@ const Calculator: React.FC = () => {
       multiplier: 1
     });
     setRetainerHours(17);
-    setShowOnlyResults(false);
     setShowRetainer(true);
     setShowInfrastructure(true);
     
