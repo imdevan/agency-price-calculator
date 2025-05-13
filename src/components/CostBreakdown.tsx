@@ -87,8 +87,9 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   
   const yearlyTotalCost = yearlyDevelopmentCost + 
     (showInfrastructure ? yearlyInfrastructureCost : 0) + 
-    ((showRetainer && retainerHours > 0) ? yearlyRetainerCost : 0);
-  
+    ((showRetainer && retainerHours > 0) ? 
+      // Pro-rate retainer cost based on remaining weeks in year after development
+      (yearlyRetainerCost * ((52 - timeline.adjustedWeeks) / 52)) : 0);
   // Format timeline for display
   const formatTimeline = (weeks: number) => {
     if (weeks >= 52) {
@@ -371,26 +372,16 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
                   <span className="font-semibold">{formatCurrency(monthlyInfrastructureCost)}</span>
                 </div>
               )}
-              {showRetainer && retainerHours > 0 && (
+              {/* {showRetainer && retainerHours > 0 && (
                 <div className="flex justify-between text-base">
                   <span>Monthly Retainer Cost:</span>
                   <span className="font-semibold">{formatCurrency(monthlyRetainerCost)}</span>
                 </div>
-              )}
-              <div className="flex justify-between text-base">
-                <span>Monthly Total Cost During Dev:</span>
-                <span className="font-semibold">{formatCurrency(monthlyTotalDevCost)}</span>
-              </div>
-              {showRetainer && retainerHours > 0 && (
-                <div className="flex justify-between text-base">
-                  <span>Monthly Total Cost During Retainer:</span>
-                  <span className="font-semibold">{formatCurrency(monthlyTotalRetainerCost)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-base">
+              )} */}
+              {/* <div className="flex justify-between text-base">
                 <span>Yearly Total Cost:</span>
                 <span className="font-semibold">{formatCurrency(yearlyTotalCost)}</span>
-              </div>
+              </div> */}
               <div className="flex justify-between text-base">
                 <span>Estimated Timeline:</span>
                 <span className="font-semibold">{formattedTimelineText}</span>
