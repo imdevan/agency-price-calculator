@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Role, Scope, InfrastructureCost, TimelineAdjustment, FreeTierEligibility } from '@/types';
@@ -168,7 +167,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
             <tbody>
               {weeklyRoleCosts.map((role) => role.weeklyHours > 0 && (
                 <tr key={role.id} className="border-b border-gray-100">
-                  <td className="py-2">{role.title}</td>
+                  <td className="py-2 whitespace-nowrap min-w-[120px]">{role.title}</td>
                   <td className="text-right py-2">{role.weeklyHours}</td>
                   <td className="text-right py-2">{role.weeklyHours * timeline.adjustedWeeks}</td>
                   <td className="text-right py-2">{formatCurrency(role.hourlyRate)}</td>
@@ -203,7 +202,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
               <thead>
                 <tr className="border-b">
                   <th className="text-left pb-2">Service</th>
-                  <th className="text-right pb-2">Monthly Cost</th>
+                  <th className="text-right pb-2 whitespace-nowrap min-w-[120px]">Monthly Cost</th>
                 </tr>
               </thead>
               <tbody>
