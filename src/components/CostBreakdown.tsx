@@ -78,10 +78,13 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   const yearlyDevelopmentCost = timeline.adjustedWeeks < 52 ? totalDevelopmentCost : monthlyDevelopmentCost * 12;
   
   // Monthly and yearly totals (with retainer)
-  const monthlyTotalCost = monthlyDevelopmentCost + 
-    (showInfrastructure ? monthlyInfrastructureCost : 0) + 
-    ((showRetainer && retainerHours > 0) ? monthlyRetainerCost : 0);
-    
+  const monthlyTotalDevCost = monthlyDevelopmentCost + 
+    (showInfrastructure ? monthlyInfrastructureCost : 0);
+      
+  // Monthly and yearly totals (with retainer)
+  const monthlyTotalRetainerCost = ((showRetainer && retainerHours > 0) ? monthlyRetainerCost : 0) + 
+    (showInfrastructure ? monthlyInfrastructureCost : 0);
+  
   const yearlyTotalCost = yearlyDevelopmentCost + 
     (showInfrastructure ? yearlyInfrastructureCost : 0) + 
     ((showRetainer && retainerHours > 0) ? yearlyRetainerCost : 0);
@@ -375,9 +378,15 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
                 </div>
               )}
               <div className="flex justify-between text-base">
-                <span>Monthly Total Cost:</span>
-                <span className="font-semibold">{formatCurrency(monthlyTotalCost)}</span>
+                <span>Monthly Total Cost During Dev:</span>
+                <span className="font-semibold">{formatCurrency(monthlyTotalDevCost)}</span>
               </div>
+              {showRetainer && retainerHours > 0 && (
+                <div className="flex justify-between text-base">
+                  <span>Monthly Total Cost During Retainer:</span>
+                  <span className="font-semibold">{formatCurrency(monthlyTotalRetainerCost)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-base">
                 <span>Yearly Total Cost:</span>
                 <span className="font-semibold">{formatCurrency(yearlyTotalCost)}</span>
