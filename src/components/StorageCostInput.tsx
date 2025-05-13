@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ interface StorageCostInputProps {
   onChange: (value: number) => void;
   cost: number;
   isFreeTier: boolean;
+  alwaysShowFreeTier?: boolean;
 }
 
 const StorageCostInput: React.FC<StorageCostInputProps> = ({ gbStored, onChange, cost, isFreeTier }) => {

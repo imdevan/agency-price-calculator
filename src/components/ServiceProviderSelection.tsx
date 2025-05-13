@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,6 +11,7 @@ interface ServiceProviderSelectionProps {
   onSelect: (provider: string) => void;
   scope: Scope;
   isFreeTier: boolean;
+  disabled?: boolean;
 }
 
 const ServiceProviderSelection: React.FC<ServiceProviderSelectionProps> = ({
@@ -20,7 +20,8 @@ const ServiceProviderSelection: React.FC<ServiceProviderSelectionProps> = ({
   selectedProvider,
   onSelect,
   scope,
-  isFreeTier
+  isFreeTier,
+  disabled
 }) => {
   const providers = INFRASTRUCTURE_SOURCE_COSTS[scope]?.[serviceType as keyof typeof INFRASTRUCTURE_SOURCE_COSTS[typeof scope]];
   
@@ -34,7 +35,7 @@ const ServiceProviderSelection: React.FC<ServiceProviderSelectionProps> = ({
       <Select
         value={selectedProvider}
         onValueChange={onSelect}
-        disabled={isFreeTier}
+        disabled={isFreeTier || disabled}
       >
         <SelectTrigger className="h-7 text-xs">
           <SelectValue placeholder="Select provider" />

@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
@@ -8,9 +7,10 @@ interface FreeTierToggleProps {
   isEnabled: boolean;
   onChange: (isEnabled: boolean) => void;
   cost?: number;
+  disabled?: boolean;
 }
 
-const FreeTierToggle: React.FC<FreeTierToggleProps> = ({ id, label, isEnabled, onChange, cost }) => {
+const FreeTierToggle: React.FC<FreeTierToggleProps> = ({ id, label, isEnabled, onChange, cost, disabled }) => {
   const formatCurrency = (amount: number | undefined) => {
     if (amount === undefined) return '';
     return new Intl.NumberFormat('en-US', {
@@ -39,6 +39,7 @@ const FreeTierToggle: React.FC<FreeTierToggleProps> = ({ id, label, isEnabled, o
           id={id}
           checked={isEnabled}
           onCheckedChange={onChange}
+          disabled={disabled}
         />
       </div>
     </div>

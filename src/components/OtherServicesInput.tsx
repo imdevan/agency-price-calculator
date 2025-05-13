@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -17,9 +16,10 @@ interface OtherServicesInputProps {
   services: OtherService[];
   onChange: (services: OtherService[]) => void;
   totalCost: number;
+  disabled?: boolean;
 }
 
-const OtherServicesInput: React.FC<OtherServicesInputProps> = ({ services, onChange, totalCost }) => {
+const OtherServicesInput: React.FC<OtherServicesInputProps> = ({ services, onChange, totalCost, disabled }) => {
   const [showServices, setShowServices] = React.useState(false);
   const [newName, setNewName] = React.useState("");
   const [newCost, setNewCost] = React.useState<number | ''>('');
@@ -63,6 +63,7 @@ const OtherServicesInput: React.FC<OtherServicesInputProps> = ({ services, onCha
         size="sm" 
         className="flex items-center w-full justify-between p-2 h-auto mb-1"
         onClick={() => setShowServices(!showServices)}
+        disabled={disabled}
       >
         <span>Add or manage other services</span>
         {showServices ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -87,6 +88,7 @@ const OtherServicesInput: React.FC<OtherServicesInputProps> = ({ services, onCha
                           size="sm"
                           className="h-8 w-8 p-0" 
                           onClick={() => handleRemoveService(service.id)}
+                          disabled={disabled}
                         >
                           <X size={14} />
                         </Button>
@@ -109,6 +111,7 @@ const OtherServicesInput: React.FC<OtherServicesInputProps> = ({ services, onCha
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g., Email Service"
                     className="h-8"
+                    disabled={disabled}
                   />
                 </div>
                 <div>
@@ -122,6 +125,7 @@ const OtherServicesInput: React.FC<OtherServicesInputProps> = ({ services, onCha
                       onChange={(e) => setNewCost(e.target.value === '' ? '' : Number(e.target.value))}
                       placeholder="0"
                       className="h-8 pl-6"
+                      disabled={disabled}
                     />
                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                   </div>
@@ -131,7 +135,7 @@ const OtherServicesInput: React.FC<OtherServicesInputProps> = ({ services, onCha
                   size="sm" 
                   className="h-8 px-2"
                   onClick={handleAddService}
-                  disabled={!newName.trim() || typeof newCost !== 'number' || newCost < 0}
+                  disabled={!newName.trim() || typeof newCost !== 'number' || newCost < 0 || disabled}
                 >
                   <Plus size={14} className="mr-1" /> Add
                 </Button>

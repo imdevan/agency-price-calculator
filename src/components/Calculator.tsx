@@ -196,6 +196,12 @@ const Calculator: React.FC = () => {
       }
     }
 
+    // Load retainer hours
+    const retainerHoursParam = searchParams.get('retainerHours');
+    if (retainerHoursParam && !isNaN(Number(retainerHoursParam))) {
+      setRetainerHours(Number(retainerHoursParam));
+    }
+
     // Load UI state
     const resultsOnly = searchParams.get('resultsOnly');
     if (resultsOnly === 'true') {
@@ -280,7 +286,14 @@ const Calculator: React.FC = () => {
     gbStorage, 
     otherServices, 
     freeTierEligibility,
-    serviceProviders
+    serviceProviders,
+    roles,
+    timeline,
+    showOnlyResults,
+    retainerHours,
+    showRetainer,
+    showInfrastructure,
+    setSearchParams
   ]);
 
   // Calculate base timeline when scope or role hours change
@@ -454,6 +467,7 @@ const Calculator: React.FC = () => {
   };
 
   const handleResetForm = () => {
+    // Reset all form values to defaults
     setRoles([
       { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262, weeklyHours: 17 },
       { id: 'designer', title: 'Designer', hourlyRate: 125, weeklyHours: 0 },
@@ -477,6 +491,7 @@ const Calculator: React.FC = () => {
       adjustedWeeks: 0,
       multiplier: 1
     });
+    setRetainerHours(17);
     setShowOnlyResults(false);
     setShowRetainer(true);
     setShowInfrastructure(true);
@@ -501,7 +516,7 @@ const Calculator: React.FC = () => {
     
     setServiceProviders(newServiceProviders);
     
-    // Clear URL params
+    // Clear URL params by navigating to root
     navigate('/', { replace: true });
     
     toast({
