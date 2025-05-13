@@ -526,6 +526,13 @@ const Calculator: React.FC = () => {
   };
 
   const toggleResultsView = () => {
+  // Scroll to top of page when toggling view, especially when showing results only
+    // window.scrollTo({ top: 0, behavior: 'instant' });
+    const targetElement = document.getElementById('scroll-target');
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     setShowOnlyResults(prev => !prev);
   };
 
@@ -538,6 +545,8 @@ const Calculator: React.FC = () => {
         </p>
       </div>
       
+      <div id="scroll-target" className="h-0 block" />
+
       {/* Top Controls Section - Now using the new component */}
       <TopControls 
         showOnlyResults={showOnlyResults}
