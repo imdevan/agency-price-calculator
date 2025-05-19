@@ -30,12 +30,12 @@ const TopControls: React.FC<TopControlsProps> = ({
               {showOnlyResults ? (
                 <>
                   <ToggleLeft size={16} />
-                  <span>All Inputs</span>
+                  <span>Show Inputs</span>
                 </>
               ) : (
                 <>
                   <ToggleRight size={16} />
-                  <span>Results Only</span>
+                  <span>ShowResults Only</span>
                 </>
               )}
             </Button>
