@@ -4,7 +4,7 @@ import { Role, Scope, InfrastructureCost, TimelineAdjustment, FreeTierEligibilit
 import ProjectSummaryCard from './cost-cards/ProjectSummaryCard';
 import DevelopmentCostCard from './cost-cards/DevelopmentCostCard';
 import InfrastructureCostCard from './cost-cards/InfrastructureCostCard';
-import TotalCostBreakdownCard from './cost-cards/TotalCostBreakdownCard';
+// import TotalCostBreakdownCard from './cost-cards/TotalCostBreakdownCard';
 import RetainerCostCard from './cost-cards/RetainerCostCard';
 
 interface CostBreakdownProps {
@@ -98,7 +98,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
 
   // Determine if we should show the Total Cost Breakdown section
   // Hide if both infrastructure and retainer are disabled
-  const showTotalCostBreakdown = (showDevelopment && (showInfrastructure || (showRetainer && retainerHours > 0)));
+  // const showTotalCostBreakdown = (showDevelopment && (showInfrastructure || (showRetainer && retainerHours > 0)));
 
   return (
     <div className="space-y-6">
@@ -136,7 +136,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
       )}
 
       {/* Total Cost Breakdown Card */}
-      {showTotalCostBreakdown && (
+      {/* {showTotalCostBreakdown && (
         <TotalCostBreakdownCard
           selectedScope={selectedScope}
           totalWeeklyCost={totalWeeklyCost}
@@ -146,7 +146,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
           totalDevelopmentCost={totalDevelopmentCost}
           showInfrastructure={showInfrastructure}
         />
-      )}
+      )} */}
 
       {/* Retainer Costs Card */}
       {showRetainer && retainerHours > 0 && (
