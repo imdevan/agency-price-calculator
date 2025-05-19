@@ -35,7 +35,7 @@ const TopControls: React.FC<TopControlsProps> = ({
               ) : (
                 <>
                   <ToggleRight size={16} />
-                  <span>ShowResults Only</span>
+                  <span>Show Results Only</span>
                 </>
               )}
             </Button>
@@ -48,7 +48,9 @@ const TopControls: React.FC<TopControlsProps> = ({
               <RefreshCw size={16} />
               <span>Reset</span>
             </Button>
-            <Button 
+          </div>
+
+          <Button 
               onClick={handleDownloadReport} 
               className="flex items-center gap-2 whitespace-nowrap"
               size="sm"
@@ -56,7 +58,6 @@ const TopControls: React.FC<TopControlsProps> = ({
               <Download size={16} />
               <span>CSV</span>
             </Button>
-          </div>
         </div>
       </div>
     </div>
