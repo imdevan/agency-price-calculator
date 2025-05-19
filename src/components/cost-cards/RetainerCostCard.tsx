@@ -20,7 +20,7 @@ const RetainerCostCard: React.FC<RetainerCostCardProps> = ({
 }) => {
   return (
     <Card>
-      <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+      <CardHeader className="pb-2 border-b">
         <CardTitle className="text-xl">Retainer Costs</CardTitle>
       </CardHeader>
       <CardContent>

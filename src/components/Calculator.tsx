@@ -555,7 +555,7 @@ const Calculator: React.FC = () => {
       
       <div id="scroll-target" className="h-0 block" />
 
-      {/* Top Controls Section */}
+      {/* Top Controls Section - Keep this one sticky */}
       <TopControls 
         showOnlyResults={showOnlyResults}
         toggleResultsView={toggleResultsView}
@@ -567,9 +567,9 @@ const Calculator: React.FC = () => {
         {/* Calculator Section */}
         {!showOnlyResults && (
           <div className="space-y-4 sm:space-y-6">
-            {/* Development Options Card with Toggle */}
+            {/* Development Options Card - Remove sticky header */}
             <Card>
-              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+              <CardHeader className="pb-2 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Development Options</CardTitle>
@@ -621,7 +621,7 @@ const Calculator: React.FC = () => {
             </Card>
 
             <Card>
-              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+              <CardHeader className="pb-2 border-b">
                 <CardTitle className="text-lg sm:text-xl">User Load</CardTitle>
                 <CardDescription className="text-sm">Estimate your expected user count</CardDescription>
               </CardHeader>
@@ -633,9 +633,9 @@ const Calculator: React.FC = () => {
               </CardContent>
             </Card>
             
-            {/* Infrastructure Options Card with Toggle */}
+            {/* Infrastructure Options Card - Remove sticky header */}
             <Card>
-              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+              <CardHeader className="pb-2 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Infrastructure Options</CardTitle>
@@ -825,9 +825,9 @@ const Calculator: React.FC = () => {
               </CardContent>
             </Card>
             
-            {/* Retainer Estimator Card with Toggle */}
+            {/* Retainer Estimator Card - Remove sticky header */}
             <Card>
-              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+              <CardHeader className="pb-2 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Ongoing Support Retainer</CardTitle>
@@ -856,7 +856,7 @@ const Calculator: React.FC = () => {
         {/* Results Section */}
         <div className={showOnlyResults ? "col-span-2" : ""}>
           <Card>
-            <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+            <CardHeader className="pb-2 border-b">
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle className="text-lg sm:text-xl">Project Cost Breakdown</CardTitle>
