@@ -52,7 +52,7 @@ const Calculator: React.FC = () => {
   const [showOnlyResults, setShowOnlyResults] = useState<boolean>(false);
   
   // Section toggles
-  const [showRetainer, setShowRetainer] = useState<boolean>(true);
+  const [showRetainer, setShowRetainer] = useState<boolean>(false);
   const [showInfrastructure, setShowInfrastructure] = useState<boolean>(true);
   const [showDevelopment, setShowDevelopment] = useState<boolean>(true);
 
