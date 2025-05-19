@@ -866,7 +866,7 @@ const Calculator: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent className="py-3 px-4 sm:px-6">
-              <SeparatedCostBreakdown 
+              <CostBreakdown 
                 roles={roles}
                 selectedScope={selectedScope}
                 infrastructureCosts={infrastructureCosts}
