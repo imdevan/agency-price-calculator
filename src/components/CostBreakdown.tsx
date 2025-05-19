@@ -14,6 +14,7 @@ interface CostBreakdownProps {
   retainerHours?: number;
   showRetainer?: boolean;
   showInfrastructure?: boolean;
+  showDevelopment?: boolean;
   otherServices?: Array<{ id: string; name: string; cost: number; description?: string }>;
 }
 
@@ -27,6 +28,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   retainerHours = 0,
   showRetainer = true,
   showInfrastructure = true,
+  showDevelopment = true,
   otherServices = []
 }) => {
   // Calculate weekly costs based on hourly rate and weekly hours
@@ -131,69 +133,73 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
   return (
     <div className="space-y-6">
       {/* New Summary Card at the top */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Project Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-2">
-            <div className="flex justify-between text-base">
-              <span>Project Scope:</span>
-              <span className="font-semibold">{PROJECT_SCOPES[selectedScope].label}</span>
+      {showDevelopment && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Project Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2">
+              <div className="flex justify-between text-base">
+                <span>Project Scope:</span>
+                <span className="font-semibold">{PROJECT_SCOPES[selectedScope].label}</span>
+              </div>
+              <div className="flex justify-between text-base">
+                <span>Estimated Timeline:</span>
+                <span className="font-semibold">{formattedTimelineText}</span>
+              </div>
+              <div className="flex justify-between text-base">
+                <span>Estimated Development Cost:</span>
+                <span className="font-semibold">{formatCurrency(totalDevelopmentCost)}</span>
+              </div>
             </div>
-            <div className="flex justify-between text-base">
-              <span>Estimated Timeline:</span>
-              <span className="font-semibold">{formattedTimelineText}</span>
-            </div>
-            <div className="flex justify-between text-base">
-              <span>Estimated Development Cost:</span>
-              <span className="font-semibold">{formatCurrency(totalDevelopmentCost)}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Development Costs</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left pb-2">Role</th>
-                <th className="text-right pb-2">Weekly Hours</th>
-                <th className="text-right pb-2">Total Hours</th>
-                <th className="text-right pb-2">Hourly Rate</th>
-                <th className="text-right pb-2">Weekly Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              {weeklyRoleCosts.map((role) => role.weeklyHours > 0 && (
-                <tr key={role.id} className="border-b border-gray-100">
-                  <td className="py-2 whitespace-nowrap min-w-[120px]">{role.title}</td>
-                  <td className="text-right py-2">{role.weeklyHours}</td>
-                  <td className="text-right py-2">{role.weeklyHours * timeline.adjustedWeeks}</td>
-                  <td className="text-right py-2">{formatCurrency(role.hourlyRate)}</td>
-                  <td className="text-right py-2">{formatCurrency(role.weeklyCost)}</td>
+      {showDevelopment && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Development Costs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left pb-2">Role</th>
+                  <th className="text-right pb-2">Weekly Hours</th>
+                  <th className="text-right pb-2">Total Hours</th>
+                  <th className="text-right pb-2">Hourly Rate</th>
+                  <th className="text-right pb-2">Weekly Cost</th>
                 </tr>
-              ))}
-              <tr className="font-medium">
-                <td colSpan={4} className="text-right pt-2">Total Weekly Development Cost:</td>
-                <td className="text-right pt-2">{formatCurrency(totalWeeklyCost)}</td>
-              </tr>
-              <tr className="font-medium">
-                <td colSpan={4} className="text-right pt-2">Total Monthly Development Cost:</td>
-                <td className="text-right pt-2">{formatCurrency(monthlyDevelopmentCost)}</td>
-              </tr>
-              <tr className="font-medium">
-                <td colSpan={4} className="text-right pt-2">Total Development Cost ({formattedTimelineInWeeks}):</td>
-                <td className="text-right pt-2">{formatCurrency(totalDevelopmentCost)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+              </thead>
+              <tbody>
+                {weeklyRoleCosts.map((role) => role.weeklyHours > 0 && (
+                  <tr key={role.id} className="border-b border-gray-100">
+                    <td className="py-2 whitespace-nowrap min-w-[120px]">{role.title}</td>
+                    <td className="text-right py-2">{role.weeklyHours}</td>
+                    <td className="text-right py-2">{role.weeklyHours * timeline.adjustedWeeks}</td>
+                    <td className="text-right py-2">{formatCurrency(role.hourlyRate)}</td>
+                    <td className="text-right py-2">{formatCurrency(role.weeklyCost)}</td>
+                  </tr>
+                ))}
+                <tr className="font-medium">
+                  <td colSpan={4} className="text-right pt-2">Total Weekly Development Cost:</td>
+                  <td className="text-right pt-2">{formatCurrency(totalWeeklyCost)}</td>
+                </tr>
+                <tr className="font-medium">
+                  <td colSpan={4} className="text-right pt-2">Total Monthly Development Cost:</td>
+                  <td className="text-right pt-2">{formatCurrency(monthlyDevelopmentCost)}</td>
+                </tr>
+                <tr className="font-medium">
+                  <td colSpan={4} className="text-right pt-2">Total Development Cost ({formattedTimelineInWeeks}):</td>
+                  <td className="text-right pt-2">{formatCurrency(totalDevelopmentCost)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
 
       {showInfrastructure && (
         <Card>
