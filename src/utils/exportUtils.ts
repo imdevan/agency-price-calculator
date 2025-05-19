@@ -1,3 +1,4 @@
+
 import { Role, Scope, InfrastructureCost, TimelineAdjustment, FreeTierEligibility } from '@/types';
 import { PROJECT_SCOPES, TIMELINE_CALCULATOR, INFRASTRUCTURE_SOURCE_COSTS } from '@/data';
 
@@ -7,6 +8,16 @@ interface OtherService {
   cost: number;
   description?: string;
 }
+
+// Add the missing formatCurrency function
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
 
 export const generateCsvData = (
   roles: Role[],
