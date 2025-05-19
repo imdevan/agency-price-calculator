@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,7 @@ import RetainerEstimator from './RetainerEstimator';
 import TopControls from './TopControls';
 import ServiceProviderSelection from './ServiceProviderSelection';
 import SectionToggle from './SectionToggle';
+import SeparatedCostBreakdown from './SeparatedCostBreakdown';
 
 interface OtherService {
   id: string;
@@ -570,7 +570,7 @@ const Calculator: React.FC = () => {
           <div className="space-y-4 sm:space-y-6">
             {/* Development Options Card with Toggle */}
             <Card>
-              <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
+              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Development Options</CardTitle>
@@ -622,7 +622,7 @@ const Calculator: React.FC = () => {
             </Card>
 
             <Card>
-              <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
+              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
                 <CardTitle className="text-lg sm:text-xl">User Load</CardTitle>
                 <CardDescription className="text-sm">Estimate your expected user count</CardDescription>
               </CardHeader>
@@ -636,7 +636,7 @@ const Calculator: React.FC = () => {
             
             {/* Infrastructure Options Card with Toggle */}
             <Card>
-              <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
+              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Infrastructure Options</CardTitle>
@@ -828,7 +828,7 @@ const Calculator: React.FC = () => {
             
             {/* Retainer Estimator Card with Toggle */}
             <Card>
-              <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
+              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Ongoing Support Retainer</CardTitle>
@@ -857,7 +857,7 @@ const Calculator: React.FC = () => {
         {/* Results Section */}
         <div className={showOnlyResults ? "col-span-2" : ""}>
           <Card>
-            <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
+            <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle className="text-lg sm:text-xl">Project Cost Breakdown</CardTitle>
@@ -866,7 +866,7 @@ const Calculator: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent className="py-3 px-4 sm:px-6">
-              <CostBreakdown 
+              <SeparatedCostBreakdown 
                 roles={roles}
                 selectedScope={selectedScope}
                 infrastructureCosts={infrastructureCosts}

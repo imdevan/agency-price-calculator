@@ -17,7 +17,7 @@ const TopControls: React.FC<TopControlsProps> = ({
   handleDownloadReport
 }) => {
   return (
-    <div className="sticky top-0 z-10 bg-background py-2 border-b mb-4 sm:mb-6 md:mb-8">
+    <div className="sticky top-0 z-50 bg-background py-2 border-b mb-4 sm:mb-6 md:mb-8 shadow-sm">
       <div className="container max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex flex-wrap items-center gap-2">
