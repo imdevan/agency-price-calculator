@@ -98,7 +98,7 @@ const CostBreakdown: React.FC<CostBreakdownProps> = ({
 
   // Determine if we should show the Total Cost Breakdown section
   // Hide if both infrastructure and retainer are disabled
-  const showTotalCostBreakdown = showInfrastructure || (showRetainer && retainerHours > 0);
+  const showTotalCostBreakdown = (showDevelopment && (showInfrastructure || (showRetainer && retainerHours > 0)));
 
   return (
     <div className="space-y-6">
