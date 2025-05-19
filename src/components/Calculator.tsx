@@ -569,7 +569,7 @@ const Calculator: React.FC = () => {
           <div className="space-y-4 sm:space-y-6">
             {/* Development Options Card - Remove sticky header */}
             <Card>
-              <CardHeader className="pb-2 border-b">
+              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Development Options</CardTitle>
@@ -621,7 +621,7 @@ const Calculator: React.FC = () => {
             </Card>
 
             <Card>
-              <CardHeader className="pb-2 border-b">
+              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
                 <CardTitle className="text-lg sm:text-xl">User Load</CardTitle>
                 <CardDescription className="text-sm">Estimate your expected user count</CardDescription>
               </CardHeader>
@@ -635,7 +635,7 @@ const Calculator: React.FC = () => {
             
             {/* Infrastructure Options Card - Remove sticky header */}
             <Card>
-              <CardHeader className="pb-2 border-b">
+              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Infrastructure Options</CardTitle>
@@ -827,7 +827,7 @@ const Calculator: React.FC = () => {
             
             {/* Retainer Estimator Card - Remove sticky header */}
             <Card>
-              <CardHeader className="pb-2 border-b">
+              <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Ongoing Support Retainer</CardTitle>
@@ -855,16 +855,6 @@ const Calculator: React.FC = () => {
 
         {/* Results Section */}
         <div className={showOnlyResults ? "col-span-2" : ""}>
-          <Card>
-            <CardHeader className="pb-2 border-b">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-lg sm:text-xl">Project Cost Breakdown</CardTitle>
-                  <CardDescription className="text-sm">View detailed cost analysis</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="py-3 px-4 sm:px-6">
               <CostBreakdown 
                 roles={roles}
                 selectedScope={selectedScope}
@@ -878,8 +868,6 @@ const Calculator: React.FC = () => {
                 showDevelopment={showDevelopment}
                 otherServices={otherServices}
               />
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
