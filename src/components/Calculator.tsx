@@ -26,7 +26,6 @@ import RetainerEstimator from './RetainerEstimator';
 import TopControls from './TopControls';
 import ServiceProviderSelection from './ServiceProviderSelection';
 import SectionToggle from './SectionToggle';
-import SeparatedCostBreakdown from './SeparatedCostBreakdown';
 
 interface OtherService {
   id: string;
