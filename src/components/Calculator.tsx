@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,9 +51,14 @@ const Calculator: React.FC = () => {
 
   // UI state
   const [showOnlyResults, setShowOnlyResults] = useState<boolean>(false);
+  
+  // Section toggles
+  const [showRetainer, setShowRetainer] = useState<boolean>(true);
+  const [showInfrastructure, setShowInfrastructure] = useState<boolean>(true);
+  const [showDevelopment, setShowDevelopment] = useState<boolean>(true);
 
   const [roles, setRoles] = useState<Role[]>([
-    { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262, weeklyHours: 17 },
+    { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 180, weeklyHours: 30 },
     { id: 'designer', title: 'Designer', hourlyRate: 125, weeklyHours: 0 },
     { id: 'projectManager', title: 'Project Manager', hourlyRate: 135, weeklyHours: 0 },
   ]);
@@ -60,10 +66,6 @@ const Calculator: React.FC = () => {
   const [userCount, setUserCount] = useState<number>(500);
   const [gbStorage, setGbStorage] = useState<number>(10);
   const [otherServices, setOtherServices] = useState<OtherService[]>([]);
-  
-  // Section toggles
-  const [showRetainer, setShowRetainer] = useState<boolean>(true);
-  const [showInfrastructure, setShowInfrastructure] = useState<boolean>(true);
   
   // Service providers
   const [serviceProviders, setServiceProviders] = useState<ServiceProviders>({
@@ -219,6 +221,12 @@ const Calculator: React.FC = () => {
       setShowInfrastructure(infraToggle === 'true');
     }
     
+    // Load development toggle
+    const devToggle = searchParams.get('showDevelopment');
+    if (devToggle !== null) {
+      setShowDevelopment(devToggle === 'true');
+    }
+    
     // Load service providers
     const providersParam = searchParams.get('providers');
     if (providersParam) {
@@ -275,6 +283,7 @@ const Calculator: React.FC = () => {
     // Add section toggles
     params.set('showRetainer', showRetainer.toString());
     params.set('showInfrastructure', showInfrastructure.toString());
+    params.set('showDevelopment', showDevelopment.toString());
     
     // Add service providers
     params.set('providers', JSON.stringify(serviceProviders));
@@ -293,6 +302,7 @@ const Calculator: React.FC = () => {
     retainerHours,
     showRetainer,
     showInfrastructure,
+    showDevelopment,
     setSearchParams
   ]);
 
@@ -469,7 +479,7 @@ const Calculator: React.FC = () => {
   const handleResetForm = () => {
     // Reset all form values to defaults
     setRoles([
-      { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262, weeklyHours: 17 },
+      { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 180, weeklyHours: 30 },
       { id: 'designer', title: 'Designer', hourlyRate: 125, weeklyHours: 0 },
       { id: 'projectManager', title: 'Project Manager', hourlyRate: 135, weeklyHours: 0 },
     ]);
@@ -494,6 +504,7 @@ const Calculator: React.FC = () => {
     setRetainerHours(17);
     setShowRetainer(true);
     setShowInfrastructure(true);
+    setShowDevelopment(true);
     
     // Reset service providers
     const newServiceProviders: ServiceProviders = {
@@ -525,8 +536,7 @@ const Calculator: React.FC = () => {
   };
 
   const toggleResultsView = () => {
-  // Scroll to top of page when toggling view, especially when showing results only
-    // window.scrollTo({ top: 0, behavior: 'instant' });
+    // Scroll to top of page when toggling view
     const targetElement = document.getElementById('scroll-target');
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -538,7 +548,7 @@ const Calculator: React.FC = () => {
   return (
     <div className="container py-4 sm:py-6 md:py-8 px-4 sm:px-6 max-w-7xl mx-auto">
       <div className="text-center mb-4 sm:mb-6 md:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Studio Price Calculator</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Project Price Calculator</h1>
         <p className="text-muted-foreground mt-2 text-sm sm:text-base">
           Estimate project costs and timelines based on scope and team composition
         </p>
@@ -546,7 +556,7 @@ const Calculator: React.FC = () => {
       
       <div id="scroll-target" className="h-0 block" />
 
-      {/* Top Controls Section - Now using the new component */}
+      {/* Top Controls Section */}
       <TopControls 
         showOnlyResults={showOnlyResults}
         toggleResultsView={toggleResultsView}
@@ -558,48 +568,61 @@ const Calculator: React.FC = () => {
         {/* Calculator Section */}
         {!showOnlyResults && (
           <div className="space-y-4 sm:space-y-6">
+            {/* Development Options Card with Toggle */}
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg sm:text-xl">Team Composition</CardTitle>
-                <CardDescription className="text-sm">Set hourly rates and weekly hours for each role</CardDescription>
-              </CardHeader>
-              <CardContent className="py-3 px-4 sm:px-6">
-                {roles.map((role) => (
-                  <RoleInput 
-                    key={role.id} 
-                    role={role} 
-                    onChange={handleRoleChange} 
-                    totalProjectHours={role.weeklyHours * timeline.adjustedWeeks}
-                  />
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg sm:text-xl">Project Scope</CardTitle>
-                <CardDescription className="text-sm">Select the type of project you're planning</CardDescription>
-              </CardHeader>
-              <CardContent className="py-3 px-4 sm:px-6">
-                <ScopeSelector 
-                  selectedScope={selectedScope} 
-                  onChange={handleScopeChange}
-                />
-                
-                {timeline.baseWeeks > 0 && (
-                  <div className="mt-4 sm:mt-6">
-                    <TimelineSlider 
-                      baseWeeks={timeline.baseWeeks}
-                      timeline={timeline}
-                      onChange={handleTimelineChange}
-                    />
+              <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-lg sm:text-xl">Development Options</CardTitle>
+                    <CardDescription className="text-sm">Configure team composition and project scope</CardDescription>
                   </div>
-                )}
+                  <SectionToggle
+                    id="development-toggle"
+                    label=""
+                    isEnabled={showDevelopment}
+                    onChange={setShowDevelopment}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className={`py-3 px-4 sm:px-6 space-y-4 sm:space-y-6 ${!showDevelopment ? 'opacity-50 pointer-events-none' : ''}`}>
+                {/* Team Composition */}
+                <div>
+                  <h3 className="font-medium text-base mb-2">Team Composition</h3>
+                  {roles.map((role) => (
+                    <RoleInput 
+                      key={role.id} 
+                      role={role} 
+                      onChange={handleRoleChange} 
+                      totalProjectHours={role.weeklyHours * timeline.adjustedWeeks}
+                    />
+                  ))}
+                </div>
+                
+                <Separator />
+                
+                {/* Project Scope */}
+                <div>
+                  <h3 className="font-medium text-base mb-2">Project Scope</h3>
+                  <ScopeSelector 
+                    selectedScope={selectedScope} 
+                    onChange={handleScopeChange}
+                  />
+                  
+                  {timeline.baseWeeks > 0 && (
+                    <div className="mt-4 sm:mt-6">
+                      <TimelineSlider 
+                        baseWeeks={timeline.baseWeeks}
+                        timeline={timeline}
+                        onChange={handleTimelineChange}
+                      />
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
                 <CardTitle className="text-lg sm:text-xl">User Load</CardTitle>
                 <CardDescription className="text-sm">Estimate your expected user count</CardDescription>
               </CardHeader>
@@ -613,7 +636,7 @@ const Calculator: React.FC = () => {
             
             {/* Infrastructure Options Card with Toggle */}
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Infrastructure Options</CardTitle>
@@ -805,7 +828,7 @@ const Calculator: React.FC = () => {
             
             {/* Retainer Estimator Card with Toggle */}
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Ongoing Support Retainer</CardTitle>
@@ -834,7 +857,7 @@ const Calculator: React.FC = () => {
         {/* Results Section */}
         <div className={showOnlyResults ? "col-span-2" : ""}>
           <Card>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 sticky top-0 bg-white z-10 border-b">
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle className="text-lg sm:text-xl">Project Cost Breakdown</CardTitle>
@@ -853,6 +876,7 @@ const Calculator: React.FC = () => {
                 retainerHours={showRetainer ? retainerHours : 0}
                 showRetainer={showRetainer && retainerHours > 0}
                 showInfrastructure={showInfrastructure}
+                showDevelopment={showDevelopment}
                 otherServices={otherServices}
               />
             </CardContent>

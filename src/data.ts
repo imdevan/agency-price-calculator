@@ -1,7 +1,7 @@
 import { ProjectScope, InfrastructureCost, InfrastructureSourceCosts } from './types';
 
 export const DEFAULT_ROLES = [
-  { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 262 },
+  { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 180 },
   { id: 'designer', title: 'Designer', hourlyRate: 125 },
   { id: 'projectManager', title: 'Project Manager', hourlyRate: 135 },
 ];
