@@ -35,7 +35,7 @@ const ProjectSummaryCard: React.FC<ProjectSummaryCardProps> = ({
 
   return (
     <Card>
-      <CardHeader className="pb-2 border-b">
+      <CardHeader className="pb-2">
         <CardTitle className="text-xl">Project Summary</CardTitle>
       </CardHeader>
       <CardContent>

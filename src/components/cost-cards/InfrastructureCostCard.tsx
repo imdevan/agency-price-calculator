@@ -26,7 +26,7 @@ const InfrastructureCostCard: React.FC<InfrastructureCostCardProps> = ({
 }) => {
   return (
     <Card>
-      <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+      <CardHeader className="pb-2">
         <CardTitle className="text-xl">Infrastructure Costs</CardTitle>
         <CardDescription className="text-sm">Monthly costs based on {userCount.toLocaleString()} users</CardDescription>
       </CardHeader>
