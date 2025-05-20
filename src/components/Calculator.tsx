@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -26,6 +26,7 @@ import RetainerEstimator from './RetainerEstimator';
 import TopControls from './TopControls';
 import ServiceProviderSelection from './ServiceProviderSelection';
 import SectionToggle from './SectionToggle';
+import { debounce } from 'lodash';
 
 interface OtherService {
   id: string;
@@ -45,8 +46,16 @@ interface ServiceProviders {
 
 const Calculator: React.FC = () => {
   const { toast } = useToast();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParamsUndebounced] = useSearchParams();
   const navigate = useNavigate();
+  
+  // Create a memoized debounced version of setSearchParams
+  const setSearchParams = useCallback(
+    debounce((params: URLSearchParams | ((prev: URLSearchParams) => URLSearchParams), options?: { replace?: boolean }) => {
+      setSearchParamsUndebounced(params, options);
+    }, 300),
+    []
+  );
 
   // UI state
   const [showOnlyResults, setShowOnlyResults] = useState<boolean>(false);
