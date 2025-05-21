@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Scope, TimelineAdjustment } from '@/types';
 import { PROJECT_SCOPES } from '@/data';
 import { formatCurrency } from '@/utils/formatUtils';
@@ -35,10 +35,13 @@ const ProjectSummaryCard: React.FC<ProjectSummaryCardProps> = ({
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl">Project Summary</CardTitle>
+      <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+        <div>
+          <CardTitle className="text-lg sm:text-xl">Project Summary</CardTitle>
+          <CardDescription className="text-sm">Estimated total development costs</CardDescription>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent >
         <div className="grid gap-2">
           <div className="flex justify-between text-base">
             <span>Project Scope:</span>

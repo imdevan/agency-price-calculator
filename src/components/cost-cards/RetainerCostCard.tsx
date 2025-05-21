@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from '@/utils/formatUtils';
 
 interface RetainerCostCardProps {
@@ -20,9 +20,12 @@ const RetainerCostCard: React.FC<RetainerCostCardProps> = ({
 }) => {
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl">Retainer Costs</CardTitle>
-      </CardHeader>
+    <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+      <div>
+        <CardTitle className="text-lg sm:text-xl">Retainer Costs</CardTitle>
+        <CardDescription className="text-sm">Ongoing maintenance and support</CardDescription>
+      </div>
+    </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div className="grid gap-2">

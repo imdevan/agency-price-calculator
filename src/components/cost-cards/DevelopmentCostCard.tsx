@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Role, TimelineAdjustment } from '@/types';
 import { formatCurrency } from '@/utils/formatUtils';
 
@@ -27,8 +27,12 @@ const DevelopmentCostCard: React.FC<DevelopmentCostCardProps> = ({
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl">Development Costs</CardTitle>
+      
+      <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+        <div>
+          <CardTitle className="text-lg sm:text-xl">Development Costs</CardTitle>
+          <CardDescription className="text-sm">Hourly team breakdown</CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
         <table className="w-full">

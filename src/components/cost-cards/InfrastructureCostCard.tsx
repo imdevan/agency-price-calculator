@@ -26,12 +26,14 @@ const InfrastructureCostCard: React.FC<InfrastructureCostCardProps> = ({
 }) => {
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl">Infrastructure Costs</CardTitle>
-        <CardDescription className="text-sm">Monthly costs based on {userCount.toLocaleString()} users</CardDescription>
+      <CardHeader className="pb-2 sticky top-[53px] bg-white z-40 border-b">
+        <div>
+          <CardTitle className="text-lg sm:text-xl">Infrastructure Costs</CardTitle>
+          <CardDescription className="text-sm">Monthly costs based on {userCount.toLocaleString()} users</CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
-        <table className="w-full">
+        <table className="w-full pt-3">
           <thead>
             <tr className="border-b">
               <th className="text-left pb-2">Service</th>
