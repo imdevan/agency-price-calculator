@@ -9,7 +9,8 @@ import {
   USER_COST_MULTIPLIER,
   STORAGE_COST_CALCULATOR,
   AUTHENTICATION_COST_CALCULATOR,
-  INFRASTRUCTURE_SOURCE_COSTS
+  INFRASTRUCTURE_SOURCE_COSTS,
+  DEFAULT_CONFIG
 } from '@/data';
 import RoleInput from './RoleInput';
 import ScopeSelector from './ScopeSelector';
@@ -58,21 +59,17 @@ const Calculator: React.FC = () => {
   );
 
   // UI state
-  const [showOnlyResults, setShowOnlyResults] = useState<boolean>(false);
+  const [showOnlyResults, setShowOnlyResults] = useState<boolean>(DEFAULT_CONFIG.ui.showOnlyResults);
   
   // Section toggles
-  const [showRetainer, setShowRetainer] = useState<boolean>(false);
-  const [showInfrastructure, setShowInfrastructure] = useState<boolean>(true);
-  const [showDevelopment, setShowDevelopment] = useState<boolean>(true);
+  const [showRetainer, setShowRetainer] = useState<boolean>(DEFAULT_CONFIG.ui.showRetainer);
+  const [showInfrastructure, setShowInfrastructure] = useState<boolean>(DEFAULT_CONFIG.ui.showInfrastructure);
+  const [showDevelopment, setShowDevelopment] = useState<boolean>(DEFAULT_CONFIG.ui.showDevelopment);
 
-  const [roles, setRoles] = useState<Role[]>([
-    { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 180, weeklyHours: 30 },
-    { id: 'designer', title: 'Designer', hourlyRate: 125, weeklyHours: 0 },
-    { id: 'projectManager', title: 'Project Manager', hourlyRate: 135, weeklyHours: 0 },
-  ]);
-  const [selectedScope, setSelectedScope] = useState<Scope>('mvp');
-  const [userCount, setUserCount] = useState<number>(500);
-  const [gbStorage, setGbStorage] = useState<number>(10);
+  const [roles, setRoles] = useState<Role[]>(DEFAULT_CONFIG.roles as Role[]);
+  const [selectedScope, setSelectedScope] = useState<Scope>(DEFAULT_CONFIG.selectedScope as Scope);
+  const [userCount, setUserCount] = useState<number>(DEFAULT_CONFIG.userCount);
+  const [gbStorage, setGbStorage] = useState<number>(DEFAULT_CONFIG.gbStorage);
   const [otherServices, setOtherServices] = useState<OtherService[]>([]);
   
   // Service providers
@@ -86,27 +83,15 @@ const Calculator: React.FC = () => {
   });
   
   const [infrastructureCosts, setInfrastructureCosts] = useState<InfrastructureCost>(
-    BASE_INFRASTRUCTURE_COSTS.mvp
+    BASE_INFRASTRUCTURE_COSTS[DEFAULT_CONFIG.selectedScope]
   );
-  const [freeTierEligibility, setFreeTierEligibility] = useState<FreeTierEligibility>({
-    hosting: false,
-    database: false,
-    cdn: false,
-    cicd: false,
-    storage: false,
-    authentication: false,
-    otherServices: false
-  });
+  const [freeTierEligibility, setFreeTierEligibility] = useState<FreeTierEligibility>(DEFAULT_CONFIG.freeTierEligibility);
   
   // Retainer state
-  const [retainerHours, setRetainerHours] = useState<number>(5);
+  const [retainerHours, setRetainerHours] = useState<number>(DEFAULT_CONFIG.retainerHours);
 
   // Timeline state
-  const [timeline, setTimeline] = useState<TimelineAdjustment>({
-    baseWeeks: 0,
-    adjustedWeeks: 0,
-    multiplier: 1
-  });
+  const [timeline, setTimeline] = useState<TimelineAdjustment>(DEFAULT_CONFIG.timeline);
 
   // Initialize service providers when scope changes
   useEffect(() => {
@@ -485,34 +470,18 @@ const Calculator: React.FC = () => {
   };
 
   const handleResetForm = () => {
-    // Reset all form values to defaults
-    setRoles([
-      { id: 'seniorDev', title: 'Senior Developer', hourlyRate: 180, weeklyHours: 30 },
-      { id: 'designer', title: 'Designer', hourlyRate: 125, weeklyHours: 0 },
-      { id: 'projectManager', title: 'Project Manager', hourlyRate: 135, weeklyHours: 0 },
-    ]);
-    setSelectedScope('mvp');
-    setUserCount(500);
-    setGbStorage(10);
+    // Reset all form values to defaults from config
+    setRoles(DEFAULT_CONFIG.roles as Role[]);
+    setSelectedScope(DEFAULT_CONFIG.selectedScope as Scope);
+    setUserCount(DEFAULT_CONFIG.userCount);
+    setGbStorage(DEFAULT_CONFIG.gbStorage);
     setOtherServices([]);
-    setFreeTierEligibility({
-      hosting: false,
-      database: false,
-      cdn: false,
-      cicd: false,
-      storage: false,
-      authentication: false,
-      otherServices: false
-    });
-    setTimeline({
-      baseWeeks: 0,
-      adjustedWeeks: 0,
-      multiplier: 1
-    });
-    setRetainerHours(5);
-    setShowRetainer(false);
-    setShowInfrastructure(true);
-    setShowDevelopment(true);
+    setFreeTierEligibility(DEFAULT_CONFIG.freeTierEligibility);
+    setTimeline(DEFAULT_CONFIG.timeline);
+    setRetainerHours(DEFAULT_CONFIG.retainerHours);
+    setShowRetainer(DEFAULT_CONFIG.ui.showRetainer);
+    setShowInfrastructure(DEFAULT_CONFIG.ui.showInfrastructure);
+    setShowDevelopment(DEFAULT_CONFIG.ui.showDevelopment);
     
     // Reset service providers
     const newServiceProviders: ServiceProviders = {
