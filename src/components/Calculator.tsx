@@ -27,7 +27,7 @@ import RetainerEstimator from './RetainerEstimator';
 import TopControls from './TopControls';
 import ServiceProviderSelection from './ServiceProviderSelection';
 import SectionToggle from './SectionToggle';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 
 interface OtherService {
   id: string;
@@ -66,7 +66,7 @@ const Calculator: React.FC = () => {
   const [showInfrastructure, setShowInfrastructure] = useState<boolean>(DEFAULT_CONFIG.ui.showInfrastructure);
   const [showDevelopment, setShowDevelopment] = useState<boolean>(DEFAULT_CONFIG.ui.showDevelopment);
 
-  const [roles, setRoles] = useState<Role[]>(DEFAULT_CONFIG.roles as Role[]);
+  const [roles, setRoles] = useState<Role[]>(DEFAULT_CONFIG.roles);
   const [selectedScope, setSelectedScope] = useState<Scope>(DEFAULT_CONFIG.selectedScope as Scope);
   const [userCount, setUserCount] = useState<number>(DEFAULT_CONFIG.userCount);
   const [gbStorage, setGbStorage] = useState<number>(DEFAULT_CONFIG.gbStorage);
@@ -471,7 +471,7 @@ const Calculator: React.FC = () => {
 
   const handleResetForm = () => {
     // Reset all form values to defaults from config
-    setRoles(DEFAULT_CONFIG.roles as Role[]);
+    setRoles(DEFAULT_CONFIG.roles);
     setSelectedScope(DEFAULT_CONFIG.selectedScope as Scope);
     setUserCount(DEFAULT_CONFIG.userCount);
     setGbStorage(DEFAULT_CONFIG.gbStorage);
